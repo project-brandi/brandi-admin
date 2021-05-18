@@ -1,6 +1,6 @@
 # brandi-admin
 
-# server 실행 방법
+### server 실행 방법
 
 1. config.py 파일을 만들고 DB접속 정보를 입력한다.
 ```

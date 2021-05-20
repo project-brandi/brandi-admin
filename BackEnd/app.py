@@ -6,40 +6,42 @@ from flask_cors                         import CORS
 from flask.json                         import JSONEncoder
 from flask_request_validator.exceptions import InvalidRequestError
 
-from view           import create_endpoints
+from view import create_endpoints
 from util.exception import CustomError
-from util.message   import UNKNOWN_ERROR, INVALID_REQUEST
+from util.message import UNKNOWN_ERROR, INVALID_REQUEST
+
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
-        print(obj)
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(obj, Decimal):
             return int(obj)
         return JSONEncoder.default(self, obj)
 
+
 def create_app():
     app              = Flask(__name__)
     app.json_encoder = CustomJSONEncoder
     
     CORS(app, resources={r"*": {"origins": "*"}})
-    
+
     create_endpoints(app)
 
     @app.errorhandler(CustomError)
     def handle_errors(e):
-    
-        return jsonify({'message' : e.message}), e.status_code
+        return jsonify({'message': e.message}), e.status_code
 
     @app.errorhandler(InvalidRequestError)
     def handle_data_errors(e):
+        return jsonify({"message": INVALID_REQUEST}), 400
 
-        return jsonify({"message" : INVALID_REQUEST}), 400
-    
     @app.errorhandler(Exception)
     def handle_exceptions(e):
-        print(e)
         return jsonify({'message' : UNKNOWN_ERROR}), 500
-    
+
+    # @app.after_request
+    # def after_request(response):
+    #     return response
+
     return app

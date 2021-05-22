@@ -2,7 +2,7 @@ from flask import jsonify
 
 from model.user_dao import TestDao, UserDao
 from util.exception import ValidationError
-from util.message   import INVALID_NAME
+# from util.message   import INVALID_NAME
 
 #################################초기세팅#############################
 class TestService:

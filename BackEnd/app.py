@@ -1,13 +1,28 @@
-from flask      import Flask, jsonify
-from flask_cors import CORS
+from datetime import datetime
+from decimal  import Decimal
+
+from flask                              import Flask, jsonify
+from flask_cors                         import CORS
+from flask.json                         import JSONEncoder
 from flask_request_validator.exceptions import InvalidRequestError
 
 from view           import create_endpoints
 from util.exception import CustomError
 from util.message   import UNKNOWN_ERROR, INVALID_REQUEST
 
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        print(obj)
+        if isinstance(obj, datetime):
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
+        if isinstance(obj, Decimal):
+            return int(obj)
+        return JSONEncoder.default(self, obj)
+
 def create_app():
-    app = Flask(__name__)
+    app              = Flask(__name__)
+    app.json_encoder = CustomJSONEncoder
+    
     CORS(app, resources={r"*": {"origins": "*"}})
     
     create_endpoints(app)

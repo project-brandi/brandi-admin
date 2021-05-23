@@ -1,5 +1,5 @@
+from view.order_view import ProductPrepareView
 from view.product_view import ProductView
-from view.order_view import ProductPrepareView 
 from view.seller_view import AccountView, LoginView
 
 def create_endpoints(app):

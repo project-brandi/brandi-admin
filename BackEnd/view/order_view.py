@@ -1,11 +1,13 @@
 from datetime import datetime, date, timedelta
-from ast import literal_eval
+from ast      import literal_eval
 
-from flask import jsonify, request
-from flask.views import MethodView
+from flask                   import jsonify, request
+from flask.views             import MethodView
 
-from connection import connect_db
+from connection            import connect_db
 from service.order_service import ProductPrepareService
+from util.exception        import InvalidRequest
+from util.message          import INVALID_REQUEST, ORDER_PRODUCT_ID_NEEDED
 
 class ProductPrepareView(MethodView):
     def get(self):
@@ -30,10 +32,10 @@ class ProductPrepareView(MethodView):
                 "offset"              : int(request.args.get("offset", 0)),
                 "limit"               : int(request.args.get("limit", 50))
             }
-            
+
             if filter["seller_attribute"] != "":
                 filter["seller_attribute"] = literal_eval(filter["seller_attribute"])
-                
+
             if type(filter["end_date"]) == str:
                 filter["end_date"] = datetime.strptime(filter["end_date"], '%Y-%m-%d') + timedelta(days=1)            
 
@@ -44,6 +46,36 @@ class ProductPrepareView(MethodView):
         except Exception as e:
             if connection is not None:
                 connection.rollback()
+                raise e
+
+        finally:
+            if connection is not None:
+                connection.close() 
+
+    def patch(self):
+        product_prepare_service = ProductPrepareService()
+        
+        connection = None
+
+        try:
+            connection = connect_db()
+
+            data = request.json
+
+            if "order_products" not in data:
+                raise InvalidRequest(INVALID_REQUEST, 400)
+
+            order_products = data["order_products"]
+
+            for order_product in order_products:
+                if "order_product_id" not in order_product:
+                    raise InvalidRequest(ORDER_PRODUCT_ID_NEEDED, 400)
+
+            result = product_prepare_service.patch_product_prepare(connection, order_products)
+        
+            return jsonify({"failure_list" : result}), 200
+
+        except Exception as e:
                 raise e
 
         finally:

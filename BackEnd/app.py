@@ -1,16 +1,17 @@
+import traceback
+
 from datetime import datetime
 from decimal  import Decimal
 
-from flask                              import Flask, jsonify
-from flask_cors                         import CORS
-from flask.json                         import JSONEncoder
-from flask_request_validator.exceptions import InvalidRequestError
+from flask                                   import Flask, jsonify
+from flask_cors                              import CORS
+from flask.json                              import JSONEncoder
+from flask_request_validator.error_formatter import demo_error_formatter
+from flask_request_validator.exceptions      import InvalidRequestError
 
-from view import create_endpoints
+from view           import create_endpoints
 from util.exception import CustomError
-from util.message import UNKNOWN_ERROR, INVALID_REQUEST
-import traceback
-
+from util.message   import UNKNOWN_ERROR
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -24,7 +25,7 @@ class CustomJSONEncoder(JSONEncoder):
 def create_app():
     app              = Flask(__name__)
     app.json_encoder = CustomJSONEncoder
-    
+
     CORS(app, resources={r"*": {"origins": "*"}})
 
     create_endpoints(app)
@@ -35,15 +36,11 @@ def create_app():
 
     @app.errorhandler(InvalidRequestError)
     def handle_data_errors(e):
-        return jsonify({"message": INVALID_REQUEST}), 400
+        return jsonify(demo_error_formatter(e)), 400
 
     @app.errorhandler(Exception)
     def handle_exceptions(e):
         traceback.print_exc()
         return jsonify({'message' : UNKNOWN_ERROR}), 500
-
-    # @app.after_request
-    # def after_request(response):
-    #     return response
 
     return app

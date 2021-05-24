@@ -1,8 +1,9 @@
 from flask import jsonify, request, g
 from flask.views import MethodView
-from flask_request_validator import GET, Param, validate_params, Datetime, Enum
+from flask_request_validator import GET, Param, validate_params, Datetime, CompositeRule, Max, Min
 
 from service.product_service import ProductService
+
 from connection import connect_db
 
 
@@ -15,16 +16,18 @@ class ProductView(MethodView):
         Param("seller_name", GET, str, required=False),
         Param("product_name", GET, str, required=False),
         Param("product_number", GET, int, required=False),
-        Param("is_sold", GET, str, required=False, rules=[Enum('true', 'false')]),
-        Param("is_displayed", GET, str, required=False, rules=[Enum('true', 'false')]),
-        Param("is_sale", GET, str, required=False, rules=[Enum('true', 'false')]),
-        Param("seller_category", GET, list, required=False)
+        Param("is_sold", GET, bool, required=False),
+        Param("is_displayed", GET, bool, required=False),
+        Param("is_sale", GET, bool, required=False),
+        Param("seller_category", GET, list, required=False),
+        Param("offset", GET, int, required=False),
+        Param("limit", GET, int, required=False, rules=CompositeRule(Min(1), Max(100)))
     )
     def get(*args):
         """어드민 상품 관리 리스트
 
         Author:
-            SeoJin Lee
+            이서진
 
         Returns:
             200: {
@@ -48,6 +51,7 @@ class ProductView(MethodView):
                     ]
                 }
             }
+            400: validate param 오류
         """
 
         filters = dict(request.args)

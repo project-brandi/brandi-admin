@@ -4,13 +4,26 @@ import pymysql
 class ProductDao:
 
     def get_product_list(self, connection, filters, is_count=False):
+        """상품 관리 리스트
+
+        Args:
+            connection: 커넥션
+            filters: 필터 조건
+            is_count: 카운트 조건 여부
+
+        Returns:
+
+        """
+
+        if filters.get("account_type") not in ["seller", "master"]:
+            raise Exception("권한이 없습니다.")
 
         query = "SELECT"
 
-        if is_count:
+        if is_count is True:
             query += " Count(*) AS count"
 
-        elif not is_count:
+        else:
             if filters.get("account_type") == "master":
                 query += " ss.name AS seller_category,"
 
@@ -94,8 +107,9 @@ class ProductDao:
                 else:
                     query += " AND ss.id IN %(seller_category)s"
 
-        query += " ORDER BY p.created_at DESC"
-        query += " LIMIT %(offset)s, %(limit)s"
+        if not is_count:
+            query += " ORDER BY p.created_at DESC"
+            query += " LIMIT %(offset)s, %(limit)s"
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query, filters)

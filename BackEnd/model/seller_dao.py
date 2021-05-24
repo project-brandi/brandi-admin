@@ -146,3 +146,46 @@ class AccountDao:
             cursor.execute(query, data)
             return cursor.lastrowid    
 
+    def is_deleted_seller(self, data, connection):
+        data['END_DATE'] = END_DATE
+        query = """
+            SELECT
+                sh.is_deleted
+            FROM
+                accounts as a
+            INNER JOIN sellers AS s
+                    ON a.Id = s.Id
+            INNER JOIN seller_histories AS sh
+                    ON s.Id = sh.seller_id
+            WHERE 
+                a.Id = %(account_id)s
+            AND 
+                sh.end_time = %(END_DATE)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+            return cursor.fetchone()
+
+    def is_deleted_master(self, data, connection):
+        data['END_DATE'] = END_DATE
+        query = """
+            SELECT
+                a.Id
+            FROM
+                accounts as a
+            INNER JOIN masters AS m
+                    ON a.Id = m.Id
+            INNER JOIN master_histories AS mh
+                    ON m.Id = mh.master_id
+            WHERE 
+                a.Id = %(account_id)s
+            AND
+                mh.is_deleted = true
+            AND 
+                mh.end_time = %(END_DATE)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+            return cursor.fetchone()    

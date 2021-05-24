@@ -5,7 +5,8 @@ from flask_request_validator import JSON, Param, validate_params
 from service.seller_service  import AccountService
 from connection              import connect_db
 from util.validation         import nickname_rule, password_rule, phone_number_rule 
-from util.message            import ACCOUNT_CREATED
+from util.message            import ACCOUNT_CREATED, LOGIN_SUCCESS
+
 
 class AccountView(MethodView):
     @validate_params(
@@ -36,6 +37,32 @@ class AccountView(MethodView):
             connection.rollback()
             raise e 
             
+        finally:
+            if connection is not None:
+                connection.close()    
+        
+class LoginView(MethodView):
+    @validate_params(
+        Param('nickname', JSON, str, required=True, rules=[nickname_rule]),
+        Param('password', JSON, str, required=True, rules=[password_rule])
+    )
+    def post(*args):
+        account_service = AccountService()
+
+        connection = None
+        try:
+            data = request.json
+
+            connection = connect_db()
+            result     = account_service.login(data, connection)
+            connection.commit()
+
+            return jsonify({"message" : LOGIN_SUCCESS, "data" : result}), 201
+        
+        except Exception as e:
+            connection.rollback()
+            raise e
+        
         finally:
             if connection is not None:
                 connection.close()

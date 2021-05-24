@@ -1,20 +1,15 @@
+import jwt
 import bcrypt
 
 from model.seller_dao import AccountDao
-from util.exception   import AlreadyExistError
-from util.message     import ALREADY_EXISTS
-from util.const       import STAND_BY
-
+from util.exception   import AlreadyExistError, InvalidUserError
+from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER
+from util.const       import STAND_BY, MASTER, SELLER, USER
+from config           import SECRET_KEY, ALGORITHM
 #################################초기세팅#############################
 class AccountService:
     """
-    어드민 회원가입 중 입력받은 닉네임이 DB에 없으면
-    join을 호출하여 가입을 허용하고 그렇지 않은 경우
-    ALREADY_EXISTS 메세지를 리턴한다.
-
-    가입이 허용되는 경우 account_type을 확인하여 
-    seller인지 master인지 구분하고 각각의 마스터 테이블과
-    이력 테이블에 정보를 삽입한다. 
+    어드민 계정 가입과 로그인과 관련된 서비스 클래스
     """
     def create_account(self, data, connection):    
         
@@ -44,9 +39,61 @@ class AccountService:
             data['master_id'] = account_id
             return account_dao.master_join_history(data, connection)
 
+    def login(self, data, connection):
+        """어드민 로그인 서비스 로직
+
+        어드민이 로그인했을때 계정 타입을 확인하고 마스터 또는 셀러이면
+        account_id 와 account_type을 토큰화하여 토큰을 발급한다.
+
+        Args:
+            data (dict): 사용자가 입력한 nickname, password 값을 가지는 dictionary
+            connection (객체): pymysql 객체
+
+        Raises:
+            InvalidUserError: 해당 nickname를 가진 계정이 없을때
+            InvalidUserError: 해당 seller 계정이 삭제된 계정일 때
+            InvalidUserError: 해당 master 계정이 삭제된 계정일 때
+            InvalidUserError: 해당 계정의 계정 타입이 일반 유저일 때
+            InvalidUserError: 패스워드가 일치하지 않을 때
+
+        Returns:
+            string : account_id 와 account_type 정보를 가지는 토큰
+        """
+        account_dao = AccountDao()
         
+        account_info    = account_dao.get_account_id(data, connection)
+        
+        if account_info is None:
+            raise InvalidUserError(INVALID_USER, 401)
 
-                
-
-
-            
+        data['account_id'] = account_info['Id']
+        account_type       = account_info['account_type_id']
+        
+        if account_type == SELLER:
+            result     = account_dao.check_seller(data, connection)
+            is_deleted = result['is_deleted']
+            if is_deleted:
+                raise InvalidUserError(INVALID_USER, 401)
+            password = result['password']
+        
+        if account_type == MASTER:
+            result = account_dao.check_master(data, connection)
+            is_deleted = result['is_deleted']
+            if is_deleted:
+                raise InvalidUserError(INVALID_USER, 401)
+            password = result['password']
+        
+        if account_type == USER:
+            raise InvalidUserError(ACCESS_DENIED, 401)
+        
+        if not bcrypt.checkpw(data['password'].encode('utf-8'), password.encode('utf-8')):
+            raise InvalidUserError(INVALID_USER, 401)
+        
+        access_token = jwt.encode(
+            {'Id'           : data['account_id'], 
+             'account_type' : account_type},
+              SECRET_KEY['secret'],
+              ALGORITHM
+        )
+        
+        return access_token      

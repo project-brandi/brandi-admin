@@ -36,6 +36,8 @@ class AccountDao:
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             return cursor.execute(query, data)
+            
+            
 
     # 어드민 계정의 타입을 확인     
     def get_account_type(self, data, connection):
@@ -48,6 +50,20 @@ class AccountDao:
                 Id = %(account_type_id)s
         """
 
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+            return cursor.fetchone()
+
+    def get_account_id(self, data, connection):
+        query = """
+            SELECT
+                Id,
+                account_type_id
+            FROM
+                accounts 
+            WHERE
+                nickname = %(nickname)s
+        """
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query, data)
             return cursor.fetchone()
@@ -146,3 +162,47 @@ class AccountDao:
             cursor.execute(query, data)
             return cursor.lastrowid    
 
+    
+    def check_seller(self, data, connection):
+        data['END_DATE'] = END_DATE
+        query = """
+            SELECT
+                sh.password,
+                sh.is_deleted
+            FROM
+                accounts as a
+            INNER JOIN sellers AS s
+                    ON a.Id = s.Id
+            INNER JOIN seller_histories AS sh
+                    ON s.Id = sh.seller_id
+            WHERE 
+                a.Id = %(account_id)s
+            AND 
+                sh.end_time = %(END_DATE)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+            return cursor.fetchone()
+
+    def check_master(self, data, connection):
+        data['END_DATE'] = END_DATE
+        query = """
+            SELECT
+                mh.password,
+                mh.is_deleted
+            FROM
+                accounts as a
+            INNER JOIN masters AS m
+                    ON a.Id = m.Id
+            INNER JOIN master_histories AS mh
+                    ON m.Id = mh.master_id
+            WHERE 
+                a.Id = %(account_id)s
+            AND 
+                mh.end_time = %(END_DATE)s
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+            return cursor.fetchone()

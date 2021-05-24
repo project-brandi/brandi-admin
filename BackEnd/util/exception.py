@@ -9,3 +9,5 @@ class ValidationError(CustomError):
 class AlreadyExistError(CustomError):
     pass
 
+class InvalidUserError(CustomError):
+    pass

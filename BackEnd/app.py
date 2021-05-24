@@ -9,6 +9,7 @@ from flask_request_validator.exceptions import InvalidRequestError
 from view import create_endpoints
 from util.exception import CustomError
 from util.message import UNKNOWN_ERROR, INVALID_REQUEST
+import traceback
 
 
 class CustomJSONEncoder(JSONEncoder):
@@ -38,6 +39,7 @@ def create_app():
 
     @app.errorhandler(Exception)
     def handle_exceptions(e):
+        traceback.print_exc()
         return jsonify({'message' : UNKNOWN_ERROR}), 500
 
     # @app.after_request

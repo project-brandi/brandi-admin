@@ -1,4 +1,4 @@
-from flask                   import request, jsonify
+from flask                   import request, jsonify, g
 from flask.views             import MethodView
 from flask_request_validator import JSON, Param, validate_params
                                     
@@ -6,6 +6,7 @@ from service.seller_service  import AccountService
 from connection              import connect_db
 from util.validation         import nickname_rule, password_rule, phone_number_rule 
 from util.message            import ACCOUNT_CREATED, LOGIN_SUCCESS
+from util.decorator          import login_required
 
 
 class AccountView(MethodView):

@@ -1,6 +1,11 @@
 import re
 
 from model.product_dao import ProductDao
+from model.util_dao import UtilDao
+
+from util.exception import ProcessingFailureError, UnauthorizedError
+from util.message import INVALID_REQUEST, UNAUTHORIZED
+from util.const import MASTER, SELLER
 
 
 class ProductService:
@@ -9,7 +14,7 @@ class ProductService:
         """어드민 상품 관리 리스트
 
         Author:
-            SeoJin Lee
+            이서진
 
         Returns:
             "count": 상품 리스트 총 개수
@@ -30,6 +35,9 @@ class ProductService:
                 }
             ]
         """
+
+        if filters.get("account_type_id") not in [MASTER, SELLER]:
+            raise UnauthorizedError(UNAUTHORIZED, 401)
 
         # 조회 기간 필터에서 시작 날짜가 끝 날짜보다 뒤일 때 시작과 끝을 같게 해줌
         if "start_date" and "end_date" in filters:
@@ -73,3 +81,40 @@ class ProductService:
         count = product_dao.get_product_list(connection, filters, is_count=True)
 
         return {"products": products, "count": count[0]["count"]}
+
+    def update_product_list(self, connection, data):
+
+        product_dao = ProductDao()
+        util_dao = UtilDao()
+
+        now = util_dao.select_now(connection)
+        count = 0
+        fail_list = []
+
+
+
+        for row in data:
+
+            try:
+
+                # 기존 데이터 선분 이력 끝나는 시간 9999 -> 현재로 변경
+                if not product_dao.update_product_history_end_time(connection, row, now):
+                    raise ProcessingFailureError(INVALID_REQUEST, 400)
+
+                result = product_dao.insert_product_history(connection, row, now)
+
+                # 수정한 데이터 생성
+                if not result:
+                    raise ProcessingFailureError(INVALID_REQUEST, 400)
+
+                connection.commit()
+
+                # 성공 카운트 추가
+                count += result
+
+            # 실패했을 경우 list만 추가하고 다시 반복문 돌도록 raise 없음
+            except Exception as e:
+                fail_list.append({"product_id": row.get("product_id")})
+                connection.rollback()
+
+        return {"success_count": count, "fail_list": fail_list}

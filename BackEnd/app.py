@@ -9,11 +9,14 @@ from flask.json                              import JSONEncoder
 from flask_request_validator.exceptions      import InvalidRequestError
 from flask_request_validator.error_formatter import demo_error_formatter
 
-from view           import create_endpoints
+from view import create_endpoints
+
 from util.exception import CustomError
-from util.message   import UNKNOWN_ERROR
+from util.message import UNKNOWN_ERROR, INVALID_REQUEST
+
 
 class CustomJSONEncoder(JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.strftime("%Y-%m-%d %H:%M:%S")

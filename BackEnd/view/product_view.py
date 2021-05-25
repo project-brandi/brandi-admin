@@ -3,13 +3,14 @@ from flask.views import MethodView
 from flask_request_validator import GET, Param, validate_params, Datetime, CompositeRule, Max, Min
 
 from service.product_service import ProductService
+from util.decorator import login_required
 
 from connection import connect_db
 
 
 class ProductView(MethodView):
 
-    # 로그인 여부 데코레이터
+    @login_required
     @validate_params(
         Param("start_date", GET, str, required=False, rules=[Datetime('%Y-%m-%d')]),
         Param("end_date", GET, str, required=False, rules=[Datetime('%Y-%m-%d')]),
@@ -56,8 +57,8 @@ class ProductView(MethodView):
 
         filters = dict(request.args)
 
-        filters["account_type"] = "master"
-        filters["account_id"] = "1"
+        filters["account_id"] = g.account_info.get("account_id")
+        filters["account_type_id"] = g.account_info.get("account_type")
 
         product_service = ProductService()
         connection = None
@@ -68,6 +69,29 @@ class ProductView(MethodView):
             return jsonify({"data": result})
 
         except Exception as e:
+            raise e
+
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def patch(*args):
+        data = request.json
+
+        # 조건이 하나만 들어올 때
+        # true/false가 아닌 값이 들어올 떄
+        # product_id가 없을 때
+
+        product_service = ProductService()
+        connection = None
+
+        try:
+            connection = connect_db()
+            result = product_service.update_product_list(connection, data)
+            return jsonify({"data": result})
+
+        except Exception as e:
+            connection.rollback()
             raise e
 
         finally:

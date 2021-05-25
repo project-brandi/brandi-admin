@@ -1,7 +1,10 @@
 import re
 
 from model.product_dao import ProductDao
-from model.util_dao import UtilDao
+from model.util_dao import SelectNowDao
+
+from util.exception import ProcessingFailureError
+from util.message import INVALID_REQUEST
 
 
 class ProductService:
@@ -77,15 +80,27 @@ class ProductService:
 
     def update_product_list(self, connection, data):
         product_dao = ProductDao()
-        util_dao = UtilDao()
+        util_dao = SelectNowDao()
 
-        data["now"] = util_dao.select_now(connection)
+        now = util_dao.select_now(connection)
+        count = 0
+        fail_list = []
 
-        try:
-            if not product_dao.update_product_history_end_time(connection, data):
-                raise
+        for row in data:
+            try:
+                if not product_dao.update_product_history_end_time(connection, row, now):
+                    raise ProcessingFailureError(INVALID_REQUEST, 400)
 
-        except Exception as e:
-            connection.rollback()
-            raise e
+                result = product_dao.insert_product_history(connection, row, now)
 
+                if not result:
+                    raise ProcessingFailureError(INVALID_REQUEST, 400)
+
+                connection.commit()
+                count += result
+
+            except Exception as e:
+                fail_list.append({"product_id": row.get("product_id")})
+                connection.rollback()
+
+        return {"success_count": count, "fail_list": fail_list}

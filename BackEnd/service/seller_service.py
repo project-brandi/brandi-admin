@@ -3,7 +3,7 @@ import bcrypt
 
 from model.seller_dao import AccountDao
 from util.exception   import AlreadyExistError, InvalidUserError
-from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER
+from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER, UNPERMITTED_USER
 from util.const       import STAND_BY, MASTER, SELLER, USER
 from config           import SECRET_KEY, ALGORITHM
 #################################초기세팅#############################
@@ -70,10 +70,13 @@ class AccountService:
         account_type       = account_info['account_type_id']
         
         if account_type == SELLER:
-            result     = account_dao.check_seller(data, connection)
-            is_deleted = result['is_deleted']
+            result        = account_dao.check_seller(data, connection)
+            is_deleted    = result['is_deleted']
+            action_status = result['action_status_id']
             if is_deleted:
                 raise InvalidUserError(INVALID_USER, 401)
+            if action_status == STAND_BY:
+                raise InvalidUserError(UNPERMITTED_USER, 401)
             password = result['password']
         
         if account_type == MASTER:

@@ -169,6 +169,7 @@ class AccountDao:
             SELECT
                 a.account_type_id,
                 sh.password,
+                sh.action_status_id,
                 sh.is_deleted
             FROM
                 accounts as a

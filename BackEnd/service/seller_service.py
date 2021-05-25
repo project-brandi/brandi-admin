@@ -17,7 +17,7 @@ class AccountService:
         is_existed  = account_dao.is_existed_account(data, connection)
         
         if is_existed:
-            raise AlreadyExistError(ALREADY_EXISTS, 400)
+            raise AlreadyExistError(ALREADY_EXISTS, 409)
 
         account_id         = account_dao.join(data,connection)
     

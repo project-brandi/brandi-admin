@@ -67,11 +67,3 @@ class LoginView(MethodView):
         finally:
             if connection is not None:
                 connection.close()
-
-class AuthorizationView(MethodView):
-    @login_required
-    def get(self):
-        
-        test = g.account_info
-
-        return jsonify({"message" : 'authorized_test', "data" : test})

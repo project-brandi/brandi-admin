@@ -15,3 +15,11 @@ class InvalidRequest(CustomError):
 class ProcessingFailureError(CustomError):
     pass
 
+class InvalidUserError(CustomError):
+    pass
+
+class InvalidAccessError(CustomError):
+    pass
+
+class LoginRequiredError(CustomError):
+    pass

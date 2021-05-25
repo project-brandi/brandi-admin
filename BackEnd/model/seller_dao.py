@@ -167,6 +167,7 @@ class AccountDao:
         data['END_DATE'] = END_DATE
         query = """
             SELECT
+                a.account_type_id,
                 sh.password,
                 sh.is_deleted
             FROM
@@ -189,6 +190,7 @@ class AccountDao:
         data['END_DATE'] = END_DATE
         query = """
             SELECT
+                a.account_type_id,
                 mh.password,
                 mh.is_deleted
             FROM

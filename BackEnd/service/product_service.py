@@ -1,6 +1,7 @@
 import re
 
 from model.product_dao import ProductDao
+from model.util_dao import UtilDao
 
 
 class ProductService:
@@ -9,7 +10,7 @@ class ProductService:
         """어드민 상품 관리 리스트
 
         Author:
-            SeoJin Lee
+            이서진
 
         Returns:
             "count": 상품 리스트 총 개수
@@ -73,3 +74,18 @@ class ProductService:
         count = product_dao.get_product_list(connection, filters, is_count=True)
 
         return {"products": products, "count": count[0]["count"]}
+
+    def update_product_list(self, connection, data):
+        product_dao = ProductDao()
+        util_dao = UtilDao()
+
+        data["now"] = util_dao.select_now(connection)
+
+        try:
+            if not product_dao.update_product_history_end_time(connection, data):
+                raise
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+

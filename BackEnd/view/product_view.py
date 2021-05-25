@@ -73,3 +73,23 @@ class ProductView(MethodView):
         finally:
             if connection is not None:
                 connection.close()
+
+    def patch(*args):
+        data = request.json
+
+        product_service = ProductService()
+        connection = None
+
+        try:
+            connection = connect_db()
+            result = product_service.update_product_list(connection, data)
+            connection.commit()
+            return jsonify({"data": result})
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+
+        finally:
+            if connection is not None:
+                connection.close()

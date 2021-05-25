@@ -1,10 +1,17 @@
 import pymysql
 
+from util.exception import UnauthorizedError
+from util.message import UNAUTHORIZED
+from util.const import END_DATE
+
 
 class ProductDao:
 
     def get_product_list(self, connection, filters, is_count=False):
         """상품 관리 리스트
+
+        Author:
+            이서진
 
         Args:
             connection: 커넥션
@@ -12,11 +19,10 @@ class ProductDao:
             is_count: 카운트 조건 여부
 
         Returns:
-
         """
 
         if filters.get("account_type") not in ["seller", "master"]:
-            raise Exception("권한이 없습니다.")
+            raise UnauthorizedError(UNAUTHORIZED, 401)
 
         query = "SELECT"
 
@@ -41,7 +47,7 @@ class ProductDao:
                 ph.discount_end_time AS discount_end_time
             """
 
-        query += """
+        query += f"""
             FROM products AS p
                 INNER JOIN product_images AS pi
                     ON p.Id = pi.product_id
@@ -54,7 +60,7 @@ class ProductDao:
                 INNER JOIN seller_histories AS sh
                     ON s.Id = sh.seller_id
             WHERE ph.is_deleted = false
-              AND ph.end_time = '9999-12-31 23:59:59'
+              AND ph.end_time = '{END_DATE}'
               AND pi.is_main = true
         """
 
@@ -96,7 +102,7 @@ class ProductDao:
         elif filters.get("account_type") == "master":
 
             if filters.get("seller_name_en"):
-                query += " AND sh.english_Name LIKE %(seller_name_en)s"
+                query += " AND sh.english_name LIKE %(seller_name_en)s"
 
             if filters.get("seller_name_kr"):
                 query += " AND sh.korean_name LIKE %(seller_name_kr)s"
@@ -115,3 +121,5 @@ class ProductDao:
             cursor.execute(query, filters)
             product_list = cursor.fetchall()
             return product_list
+
+    def update_product_history_end_time(self, connection, filters, is_count=False):

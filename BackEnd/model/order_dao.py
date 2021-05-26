@@ -4,7 +4,8 @@ import pymysql
 
 from util.const import (SHIPMENT_STATUS_BEFORE_DELIVERY, 
                         ORDER_STATUS_ORDER_COMPLETED,
-                        SHIPPING)
+                        SHIPPING,
+                        END_DATE)
 
 class ProductPrepareDao:
     def get_product_prepare(self, connection, filter):
@@ -260,8 +261,7 @@ class OrderDetailInfoDao:
                 adh.phone_number as receive_phone, 
                 adh.address, 
                 smm.content, 
-                sm.message, 
-                oph.start_time 
+                sm.message
             FROM order_products as op
             INNER JOIN orders AS o 
                 ON op.order_id = o.id
@@ -298,9 +298,26 @@ class OrderDetailInfoDao:
             INNER JOIN shipment_memo as smm 
                 ON sm.shipment_memo_id = smm.id 
             WHERE op.id = %(order_product_id)s
+                AND oph.end_time = %(end_date)s
             """
-        # 이력, 정보 분리해서 가져오기
+        
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query, data)
         
+            return cursor.fetchone()
+
+    def get_order_log(self, connection, data):
+        query = """
+            SELECT 
+                oph.start_time, 
+                os.order_status 
+            FROM order_product_histories as oph 
+            INNER JOIN order_status AS os 
+                ON oph.order_status_id = os.id 
+            WHERE oph.order_product_id = %(order_product_id)s
+            """
+        
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, data)
+
             return cursor.fetchall()

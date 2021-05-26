@@ -44,7 +44,7 @@ def create_app():
 
     # @app.errorhandler(Exception)
     # def handle_exceptions(e):
-
+    #     traceback.print_exc()
     #     return jsonify({'message' : UNKNOWN_ERROR}), 500
 
     return app

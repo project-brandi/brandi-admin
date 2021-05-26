@@ -1,7 +1,6 @@
-from view.seller_view  import SellerAccountView, MasterAccountView, LoginView, SellerAccountView
-from view.order_view   import ProductPrepareView, OrderDetailInfoView
-from view.product_view import ProductView, ProductSellerView
-
+from view.order_view   import ProductPrepareView
+from view.product_view import ProductView
+from view.account_view  import SellerAccountView, MasterAccountView, LoginView
 
 def create_endpoints(app):
     app.add_url_rule('/order/product-prepare', view_func=ProductPrepareView.as_view('product_prepare'))

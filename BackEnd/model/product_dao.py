@@ -1,7 +1,5 @@
 import pymysql
 
-from util.exception import UnauthorizedError
-from util.message import UNAUTHORIZED
 from util.const import END_DATE
 
 

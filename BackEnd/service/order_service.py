@@ -1,5 +1,5 @@
 from model.order_dao import ProductPrepareDao
-from model.util_dao  import SelectNowDao
+from model.util_dao  import UtilDao
 from util.const      import END_DATE
 from util.exception  import ProcessingFailureError
 from util.message    import INVALID_REQUEST
@@ -20,7 +20,7 @@ class ProductPrepareService:
 
     def patch_product_prepare(self, connection, order_products):
         product_prepare_dao = ProductPrepareDao()
-        select_now_dao      = SelectNowDao()
+        select_now_dao      = UtilDao()
 
         try:
             now = select_now_dao.select_now(connection)

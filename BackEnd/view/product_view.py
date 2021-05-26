@@ -78,10 +78,6 @@ class ProductView(MethodView):
     def patch(*args):
         data = request.json
 
-        # 조건이 하나만 들어올 때
-        # true/false가 아닌 값이 들어올 떄
-        # product_id가 없을 때
-
         product_service = ProductService()
         connection = None
 

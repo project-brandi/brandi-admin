@@ -1,8 +1,11 @@
+from flask import jsonify
+
 from model.order_dao import ProductPrepareDao
 from model.util_dao  import UtilDao
 from util.const      import END_DATE
 from util.exception  import ProcessingFailureError
 from util.message    import INVALID_REQUEST
+from service.util_service import ExcelDownloadService
 
 class ProductPrepareService:
     def get_product_prepare(self, connection, filter):
@@ -51,4 +54,35 @@ class ProductPrepareService:
 
         except Exception as e:
             connection.rollback()
+            raise e
+
+    def excel_download(self, connection, filter):
+        get_data_dao = ProductPrepareDao()
+        excel_download_service = ExcelDownloadService()
+
+        try:
+            data = get_data_dao.get_product_prepare(connection, filter)
+
+            titles = ['결제일자', 
+                '주문번호', 
+                '주문상세번호', 
+                '셀러명', 
+                '상품명', 
+                '컬러', 
+                '사이즈', 
+                '옵션추가금액',
+                '수량', 
+                '주문자명', 
+                '핸드폰번호', 
+                '결제금액', 
+                '주문상태']
+
+            for item in data:
+                item["created_at"] = str(item["created_at"])
+
+            result = excel_download_service.excel_download(titles, data)
+            
+            return result
+
+        except Exception as e:
             raise e

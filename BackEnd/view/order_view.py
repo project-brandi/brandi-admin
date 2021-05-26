@@ -7,7 +7,7 @@ from flask_request_validator import Param, GET
 from flask_request_validator.validator import validate_params
 
 from connection                   import connect_db
-from service.order_service        import ProductPrepareService, OrderDetailInfoService
+from service                      import ProductPrepareService, OrderDetailInfoService
 from util.exception               import InvalidRequest
 from util.message                 import INVALID_REQUEST, ORDER_PRODUCT_ID_NEEDED
 

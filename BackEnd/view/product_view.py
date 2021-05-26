@@ -2,7 +2,7 @@ from flask import jsonify, request, g
 from flask.views import MethodView
 from flask_request_validator import GET, Param, validate_params, Datetime, CompositeRule, Max, Min
 
-from service.product_service import ProductService
+from service import ProductService
 
 from util.decorator import login_required
 from util.const import MASTER, SELLER

@@ -3,7 +3,7 @@ import jwt
 from functools        import wraps
 from flask            import request, g
 
-from model.account_dao import AccountDao
+from model            import AccountDao
 from util.exception   import InvalidAccessError, LoginRequiredError
 from util.message     import UNAUTHORIZED_TOKEN, LOGIN_REQUIRED
 from util.const       import MASTER, SELLER

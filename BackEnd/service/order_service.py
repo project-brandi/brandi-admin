@@ -1,7 +1,8 @@
 from flask import jsonify
 
-from model   import ProductPrepareDao, OrderDetailInfoDao, UtilDao
-from service import ExcelDownloadService
+from model.order_dao      import ProductPrepareDao, OrderDetailInfoDao
+from model.util_dao       import UtilDao
+from service.util_service import ExcelDownloadService
 from util.const      import END_DATE
 from util.exception  import ProcessingFailureError
 from util.message    import INVALID_REQUEST
@@ -80,6 +81,11 @@ class ProductPrepareService:
                 item["created_at"] = str(item["created_at"])
 
             result = excel_download_service.excel_download(titles, data)
+
+            return result
+
+        except Exception as e:
+            raise e
 
 class OrderDetailInfoService:
     def get_order_detail_info(self, connection, data):

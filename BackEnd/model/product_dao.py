@@ -143,8 +143,6 @@ class ProductDao:
                 discount_rate,
                 discount_start_time,
                 discount_end_time,
-                is_sold,
-                is_displayed,
                 minimum_sell_quantity,
                 maximum_sell_quantity,
                 comment,
@@ -153,7 +151,9 @@ class ProductDao:
                 is_deleted,
                 manufacturer,
                 manufactured_date,
-                origin
+                origin,
+                is_sold,
+                is_displayed
                 )
             SELECT account_id,
                 product_id,
@@ -165,8 +165,6 @@ class ProductDao:
                 discount_rate,
                 discount_start_time,
                 discount_end_time,
-                %(is_sold)s,
-                %(is_displayed)s,
                 minimum_sell_quantity,
                 maximum_sell_quantity,
                 comment,
@@ -175,7 +173,20 @@ class ProductDao:
                 is_deleted,
                 manufacturer,
                 manufactured_date,
-                origin
+                origin,
+        """
+
+        if "is_sold" in data:
+            query += "%(is_sold)s,"
+        else:
+            query += "is_sold,"
+
+        if "is_displayed" in data:
+            query += "%(is_displayed)s"
+        else:
+            query += "is_displayed"
+
+        query += f"""
             FROM product_histories
             WHERE product_id = %(product_id)s
               AND end_time = '{now}'

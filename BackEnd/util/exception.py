@@ -34,3 +34,7 @@ class LoginRequiredError(CustomError):
 
 class UnauthorizedError(CustomError):
     pass
+
+
+class InvalidParamError(CustomError):
+    pass

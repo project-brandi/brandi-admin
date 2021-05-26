@@ -5,6 +5,9 @@ from flask_request_validator import GET, Param, validate_params, Datetime, Compo
 from service.product_service import ProductService
 
 from util.decorator import login_required
+from util.const import MASTER, SELLER
+from util.message import UNAUTHORIZED, NOT_EXIST_PRODUCT_ID, INVALID_PRODUCT_ID
+from util.exception import UnauthorizedError, InvalidParamError
 
 from connection import connect_db
 
@@ -57,9 +60,10 @@ class ProductView(MethodView):
         """
 
         filters = dict(request.args)
-
         filters["account_id"] = g.account_info.get("account_id")
-        filters["account_type_id"] = g.account_info.get("account_type")
+
+        if g.account_info.get("account_type") not in [MASTER, SELLER]:
+            raise UnauthorizedError(UNAUTHORIZED, 401)
 
         product_service = ProductService()
         connection = None
@@ -76,8 +80,18 @@ class ProductView(MethodView):
             if connection is not None:
                 connection.close()
 
+    # 로그인 데코레이터
     def patch(*args):
         data = request.json
+
+        for row in data:
+            # product_id가 없을 때
+            if row.get("product_id") is None:
+                raise InvalidParamError(NOT_EXIST_PRODUCT_ID, 400)
+
+            # product_id가 숫자가 아닐 때
+            if type(row.get("product_id")) is not int:
+                raise InvalidParamError(INVALID_PRODUCT_ID, 400)
 
         product_service = ProductService()
         connection = None
@@ -89,6 +103,31 @@ class ProductView(MethodView):
 
         except Exception as e:
             connection.rollback()
+            raise e
+
+        finally:
+            if connection is not None:
+                connection.close()
+
+
+class ProductSellerView(MethodView):
+
+    @validate_params(
+        Param("search_word", GET, str, required=True),
+        Param("limit", GET, int, required=True, rules=CompositeRule(Min(1), Max(100)))
+    )
+    def get(*args):
+        filters = dict(request.args)
+
+        product_service = ProductService()
+        connection = None
+
+        try:
+            connection = connect_db()
+            result = product_service.get_seller_name_search_list(connection, filters)
+            return jsonify({"data": result})
+
+        except Exception as e:
             raise e
 
         finally:

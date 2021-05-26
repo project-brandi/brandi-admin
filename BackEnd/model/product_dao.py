@@ -194,3 +194,19 @@ class ProductDao:
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             return cursor.execute(query, data)
+
+    def get_seller_name_search_list(self, connection, filters):
+        query = """
+        SELECT
+            seller_id,
+            korean_name,
+            english_name
+        FROM seller_histories
+        WHERE korean_name LIKE %(search_word)s
+           OR english_name LIKE %(search_word)s
+        LIMIT %(limit)s;
+        """
+
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, filters)
+            return cursor.fetchall()

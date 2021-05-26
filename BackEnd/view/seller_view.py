@@ -2,7 +2,7 @@ from flask                   import request, jsonify
 from flask.views             import MethodView
 from flask_request_validator import JSON, Param, validate_params
                                     
-from service.seller_service  import AccountService
+from service                 import AccountService
 from connection              import connect_db
 from util.validation         import (
     nickname_rule, password_rule, phone_number_rule,

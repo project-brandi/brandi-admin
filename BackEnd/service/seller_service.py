@@ -1,7 +1,7 @@
 import jwt
 import bcrypt
 
-from model.seller_dao import AccountDao
+from model            import AccountDao
 from util.exception   import AlreadyExistError, InvalidUserError
 from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER, UNPERMITTED_USER
 from util.const       import STAND_BY, MASTER, SELLER, USER

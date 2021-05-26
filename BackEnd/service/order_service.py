@@ -1,15 +1,10 @@
 from flask import jsonify
 
-<<<<<<< HEAD
-from model.order_dao import ProductPrepareDao
-=======
->>>>>>> a6cbb2f (Add : 주문상세정보 조회 api 구현)
-from model.util_dao  import UtilDao
-from model.order_dao import ProductPrepareDao, OrderDetailInfoDao
+from model   import ProductPrepareDao, OrderDetailInfoDao, UtilDao
+from service import ExcelDownloadService
 from util.const      import END_DATE
 from util.exception  import ProcessingFailureError
 from util.message    import INVALID_REQUEST
-from service.util_service import ExcelDownloadService
 
 class ProductPrepareService:
     def get_product_prepare(self, connection, filter):

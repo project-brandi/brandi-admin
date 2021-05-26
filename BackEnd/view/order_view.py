@@ -3,9 +3,11 @@ from ast      import literal_eval
 
 from flask                   import jsonify, request
 from flask.views             import MethodView
+from flask_request_validator import Param, GET
+from flask_request_validator.validator import validate_params
 
 from connection            import connect_db
-from service.order_service import ProductPrepareService
+from service.order_service import ProductPrepareService, OrderDetailInfoService
 from util.exception        import InvalidRequest
 from util.message          import INVALID_REQUEST, ORDER_PRODUCT_ID_NEEDED
 
@@ -91,4 +93,30 @@ class ProductPrepareView(MethodView):
 
         finally:
             if connection is not None:
-                connection.close() 
+                connection.close()
+
+class OrderDetailInfoView(MethodView):
+    @validate_params(
+        Param("order_product_id", GET, int, required=True)
+    )
+    def get(self, *args):
+        order_detail_info = OrderDetailInfoService()
+
+        connection = None
+        try:
+            connection = connect_db()
+            
+            data = dict(request.args)
+            
+            result = order_detail_info.get_order_detail_info(connection, data)
+            
+            return jsonify(result), 200
+
+        except Exception as e:
+            if connection is not None:
+                connection.rollback()
+            raise e
+        
+        finally:
+            if connection is not None:
+                connection.close()

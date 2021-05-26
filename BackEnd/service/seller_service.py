@@ -6,7 +6,8 @@ from util.exception   import AlreadyExistError, InvalidUserError
 from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER, UNPERMITTED_USER
 from util.const       import STAND_BY, MASTER, SELLER, USER
 from config           import SECRET_KEY, ALGORITHM
-#################################초기세팅#############################
+
+
 class AccountService:
     """
     어드민 계정 가입과 로그인과 관련된 서비스 클래스

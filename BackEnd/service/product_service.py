@@ -1,6 +1,7 @@
 import re
 
-from model import ProductDao, UtilDao
+from model.product_dao import ProductDao
+from model.util_dao    import UtilDao
 
 from util.exception import ProcessingFailureError, UnauthorizedError
 from util.message import INVALID_REQUEST, UNAUTHORIZED, INVALID_PRODUCT_ID, NOT_EXIST_PRODUCT_ID

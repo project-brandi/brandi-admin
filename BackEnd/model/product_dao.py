@@ -132,8 +132,7 @@ class ProductDao:
         """
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
-            result = cursor.execute(query, data)
-            return result
+            return cursor.execute(query, data)
 
     def insert_product_history(self, connection, data, now):
         query = f"""

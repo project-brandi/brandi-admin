@@ -36,9 +36,6 @@ class ProductService:
             ]
         """
 
-        if filters.get("account_type_id") not in [MASTER, SELLER]:
-            raise UnauthorizedError(UNAUTHORIZED, 401)
-
         # 조회 기간 필터에서 시작 날짜가 끝 날짜보다 뒤일 때 시작과 끝을 같게 해줌
         if "start_date" and "end_date" in filters:
             if filters.get("start_date") > filters.get("end_date"):
@@ -94,14 +91,6 @@ class ProductService:
         for row in data:
 
             try:
-                # product_id가 존재하지 않을 때
-                if row.get("product_id") is None:
-                    raise ProcessingFailureError(NOT_EXIST_PRODUCT_ID, 400)
-
-                # product_id가 숫자가 아닐 때
-                if type(row.get("product_id")) is not int:
-                    raise ProcessingFailureError(INVALID_PRODUCT_ID, 400)
-
                 # 기존 데이터 선분 이력 끝나는 시간 9999 -> 현재로 변경
                 if not product_dao.update_product_history_end_time(connection, row, now):
                     raise ProcessingFailureError(INVALID_REQUEST, 400)
@@ -119,7 +108,20 @@ class ProductService:
 
             # 실패했을 경우 list만 추가하고 다시 반복문 돌도록 raise 없음
             except ProcessingFailureError as e:
-                fail_list.append({"product_id": row.get("product_id"), "message": e.message})
+                fail_list.append({"product_id": row.get("product_id")})
                 connection.rollback()
 
         return {"success_count": count, "fail_list": fail_list}
+
+    def get_seller_name_search_list(self, connection, filters):
+
+        filters["search_word"] = filters["search_word"] + '%'
+        filters["limit"] = int(filters.get("limit", 10))
+
+        if filters.get("limit") < 1:
+            filters["limit"] = 1
+
+        product_dao = ProductDao()
+        sellers = product_dao.get_seller_name_search_list(connection, filters)
+
+        return {"sellers": sellers}

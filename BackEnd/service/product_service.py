@@ -4,7 +4,7 @@ from model.product_dao import ProductDao
 from model.util_dao import UtilDao
 
 from util.exception import ProcessingFailureError, UnauthorizedError
-from util.message import INVALID_REQUEST, UNAUTHORIZED
+from util.message import INVALID_REQUEST, UNAUTHORIZED, INVALID_PRODUCT_ID, NOT_EXIST_PRODUCT_ID
 from util.const import MASTER, SELLER
 
 
@@ -53,7 +53,7 @@ class ProductService:
         if "product_name" in filters:
             filters["product_name"] = filters["product_name"] + '%'
 
-        reg = re.compile(r'[a-zA-Z]')
+        reg = re.compile(r'^[a-zA-Z]*$')
 
         # filters에 seller_name이 있으면서 영어 대소문자와 숫자로 이루어졌을 때
         if filters.get("seller_name") and reg.match(filters.get("seller_name")):
@@ -94,6 +94,13 @@ class ProductService:
         for row in data:
 
             try:
+                # product_id가 존재하지 않을 때
+                if row.get("product_id") is None:
+                    raise ProcessingFailureError(NOT_EXIST_PRODUCT_ID, 400)
+
+                # product_id가 숫자가 아닐 때
+                if type(row.get("product_id")) is not int:
+                    raise ProcessingFailureError(INVALID_PRODUCT_ID, 400)
 
                 # 기존 데이터 선분 이력 끝나는 시간 9999 -> 현재로 변경
                 if not product_dao.update_product_history_end_time(connection, row, now):
@@ -111,8 +118,8 @@ class ProductService:
                 count += result
 
             # 실패했을 경우 list만 추가하고 다시 반복문 돌도록 raise 없음
-            except Exception as e:
-                fail_list.append({"product_id": row.get("product_id")})
+            except ProcessingFailureError as e:
+                fail_list.append({"product_id": row.get("product_id"), "message": e.message})
                 connection.rollback()
 
         return {"success_count": count, "fail_list": fail_list}

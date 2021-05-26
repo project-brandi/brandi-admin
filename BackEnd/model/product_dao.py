@@ -198,10 +198,13 @@ class ProductDao:
     def get_seller_name_search_list(self, connection, filters):
         query = """
         SELECT
-            seller_id,
-            korean_name,
-            english_name
-        FROM seller_histories
+            s.Id,
+            s.seller_subcategory_id,
+            sh.korean_name,
+            sh.english_name
+        FROM seller_histories AS sh
+            INNER JOIN sellers AS s
+                ON s.Id = sh.seller_id
         WHERE korean_name LIKE %(search_word)s
            OR english_name LIKE %(search_word)s
         LIMIT %(limit)s;

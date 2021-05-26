@@ -3,6 +3,7 @@ from flask.views import MethodView
 from flask_request_validator import GET, Param, validate_params, Datetime, CompositeRule, Max, Min
 
 from service.product_service import ProductService
+
 from util.decorator import login_required
 
 from connection import connect_db

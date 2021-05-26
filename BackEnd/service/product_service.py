@@ -91,8 +91,6 @@ class ProductService:
         count = 0
         fail_list = []
 
-
-
         for row in data:
 
             try:

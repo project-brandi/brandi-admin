@@ -4,7 +4,7 @@ import bcrypt
 from model            import AccountDao
 from util.exception   import AlreadyExistError, InvalidUserError
 from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER, UNPERMITTED_USER
-from util.const       import STAND_BY, MASTER, SELLER, USER
+from util.const       import STAND_BY, MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE, USER_ACCOUNT_TYPE
 from config           import SECRET_KEY, ALGORITHM
 
 
@@ -70,7 +70,7 @@ class AccountService:
         data['account_id'] = account_info['Id']
         account_type       = account_info['account_type_id']
         
-        if account_type == SELLER:
+        if account_type == SELLER_ACCOUNT_TYPE:
             result        = account_dao.check_seller(data, connection)
             is_deleted    = result['is_deleted']
             action_status = result['action_status_id']
@@ -80,14 +80,14 @@ class AccountService:
                 raise InvalidUserError(UNPERMITTED_USER, 401)
             password = result['password']
         
-        if account_type == MASTER:
+        if account_type == MASTER_ACCOUN_TYPE:
             result = account_dao.check_master(data, connection)
             is_deleted = result['is_deleted']
             if is_deleted:
                 raise InvalidUserError(INVALID_USER, 401)
             password = result['password']
         
-        if account_type == USER:
+        if account_type == USER_ACCOUNT_TYPE:
             raise InvalidUserError(ACCESS_DENIED, 401)
         
         if not bcrypt.checkpw(data['password'].encode('utf-8'), password.encode('utf-8')):

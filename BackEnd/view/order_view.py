@@ -1,18 +1,21 @@
 from datetime import datetime, date, timedelta
 from ast      import literal_eval
 
-from flask                   import jsonify, request
-from flask.views             import MethodView
-from flask_request_validator import Param, GET
+from flask                             import jsonify, request, g
+from flask.views                       import MethodView
+from flask_request_validator           import Param, GET
 from flask_request_validator.validator import validate_params
 
-from connection                   import connect_db
-from service                      import ProductPrepareService, OrderDetailInfoService
-from util.exception               import InvalidRequest
-from util.message                 import INVALID_REQUEST, ORDER_PRODUCT_ID_NEEDED
+from connection     import connect_db
+from service        import ProductPrepareService, OrderDetailInfoService
+from util.exception import InvalidRequest
+from util.message   import ORDER_PRODUCTS_NEEDED, ORDER_PRODUCT_ID_NEEDED
+from util.decorator import login_required
+from util.const     import SELLER_ACCOUNT_TYPE
 
 class ProductPrepareView(MethodView):
     # validate_parms 변경 예정
+    @login_required
     def get(self):
         product_prepare_service = ProductPrepareService()
 
@@ -41,6 +44,9 @@ class ProductPrepareView(MethodView):
 
             if type(filter["end_date"]) == str:
                 filter["end_date"] = datetime.strptime(filter["end_date"], '%Y-%m-%d') + timedelta(days=1)            
+            
+            if g.account_info["account_type"] == SELLER_ACCOUNT_TYPE:
+                filter["account_id"] = g.account_info["account_id"]
 
             if request.path == '/order/product-prepare':
                 result =  product_prepare_service.get_product_prepare(connection, filter)
@@ -76,7 +82,7 @@ class ProductPrepareView(MethodView):
             data = request.json
 
             if "order_products" not in data:
-                raise InvalidRequest(INVALID_REQUEST, 400)
+                raise InvalidRequest(ORDER_PRODUCTS_NEEDED, 400)
 
             order_products = data["order_products"]
 
@@ -96,6 +102,7 @@ class ProductPrepareView(MethodView):
                 connection.close()
 
 class OrderDetailInfoView(MethodView):
+    @login_required
     @validate_params(
         Param("order_product_id", GET, int, required=True)
     )

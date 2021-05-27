@@ -3,6 +3,7 @@ UNKNOWN_ERROR = '알 수 없는 에러입니다.'
 INVALID_REQUEST = '요청 데이터를 확인해주세요.'
 ORDER_ID_NEEDED = 'order_id를 입력해주세요.'
 ORDER_PRODUCT_ID_NEEDED = 'order_product_id를 입력해주세요.'
+ORDER_PRODUCTS_NEEDED = 'order_products를 입력해주세요.'
 
 # 성공 메시지
 ACCOUNT_CREATED = '계정이 생성되었습니다.'

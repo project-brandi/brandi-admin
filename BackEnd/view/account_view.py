@@ -9,7 +9,7 @@ from util.validation         import (
     seller_korean_name_rule, seller_english_name_rule
     )
 from util.message            import ACCOUNT_CREATED, LOGIN_SUCCESS
-from util.const              import MASTER, SELLER
+from util.const              import MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE
 
 
 class SellerAccountView(MethodView):
@@ -29,7 +29,7 @@ class SellerAccountView(MethodView):
         connection = None
         try:
             data = request.json
-            data['account_type_id'] = SELLER
+            data['account_type_id'] = SELLER_ACCOUNT_TYPE
             
             connection = connect_db()
             result     = account_service.create_account(data, connection)
@@ -56,7 +56,7 @@ class MasterAccountView(MethodView):
         connection = None
         try:
             data = request.json
-            data['account_type_id'] = MASTER
+            data['account_type_id'] = MASTER_ACCOUN_TYPE
 
             connection = connect_db()
             result     = account_service.create_account(data, connection)

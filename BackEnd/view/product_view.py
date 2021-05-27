@@ -117,10 +117,6 @@ class ProductSellerView(MethodView):
         Param("limit", GET, int, required=True, rules=CompositeRule(Min(1), Max(100)))
     )
     def get(*args):
-        # TODO
-        # 1. 셀러 속성 갖고 오기
-        # 2. 입점 준비 중인 셀러는 아예 목록에 안뜨게
-
         filters = dict(request.args)
 
         product_service = ProductService()

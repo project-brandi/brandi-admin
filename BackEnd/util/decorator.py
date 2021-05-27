@@ -6,7 +6,7 @@ from flask            import request, g
 from model            import AccountDao
 from util.exception   import InvalidAccessError, LoginRequiredError
 from util.message     import UNAUTHORIZED_TOKEN, LOGIN_REQUIRED
-from util.const       import MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE
+from util.const       import MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE
 from config           import SECRET_KEY, ALGORITHM
 from connection       import connect_db
 
@@ -46,7 +46,7 @@ def login_required(func):
                     if is_deleted:
                         raise InvalidAccessError(UNAUTHORIZED_TOKEN, 401)
 
-                if payload['account_type'] == MASTER_ACCOUN_TYPE:
+                if payload['account_type'] == MASTER_ACCOUNT_TYPE:
                     is_deleted = account_dao.check_master(data, connection)['is_deleted']
                     if is_deleted:
                         raise InvalidAccessError(UNAUTHORIZED_TOKEN, 401)

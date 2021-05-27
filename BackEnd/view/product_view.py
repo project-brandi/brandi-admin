@@ -5,7 +5,7 @@ from flask_request_validator import GET, Param, validate_params, Datetime, Compo
 from service import ProductService
 
 from util.decorator import login_required
-from util.const import MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE
+from util.const import MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE
 from util.message import UNAUTHORIZED, NOT_EXIST_PRODUCT_ID, INVALID_PRODUCT_ID
 from util.exception import UnauthorizedError, InvalidParamError
 
@@ -62,7 +62,7 @@ class ProductView(MethodView):
         filters = dict(request.args)
         filters["account_id"] = g.account_info.get("account_id")
 
-        if g.account_info.get("account_type") not in [MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE]:
+        if g.account_info.get("account_type") not in [MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE]:
             raise UnauthorizedError(UNAUTHORIZED, 401)
 
         product_service = ProductService()

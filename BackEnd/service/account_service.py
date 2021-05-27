@@ -4,7 +4,7 @@ import bcrypt
 from model            import AccountDao
 from util.exception   import AlreadyExistError, InvalidUserError
 from util.message     import ACCESS_DENIED, ALREADY_EXISTS, INVALID_USER, UNPERMITTED_USER
-from util.const       import STAND_BY, MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE, USER_ACCOUNT_TYPE
+from util.const       import STAND_BY, MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE, USER_ACCOUNT_TYPE
 from config           import SECRET_KEY, ALGORITHM
 
 
@@ -24,18 +24,18 @@ class AccountService:
     
         data['Id']         = account_id
         data['account_id'] = account_id
-        account_type       = account_dao.get_account_type(data, connection)['account_type']
+        account_type       = data['account_type_id']
             
         hashed_password  = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         data['password'] = hashed_password
 
-        if account_type == 'seller':
+        if account_type == SELLER_ACCOUNT_TYPE:
             account_dao.seller_join_info(data, connection)
             data['seller_id']        = account_id
             data['action_status_id'] = STAND_BY
             return account_dao.seller_join_history(data, connection)
         
-        if account_type == 'master':
+        if account_type == MASTER_ACCOUNT_TYPE:
             account_dao.master_join_info(data, connection) 
             data['master_id'] = account_id
             return account_dao.master_join_history(data, connection)
@@ -80,7 +80,7 @@ class AccountService:
                 raise InvalidUserError(UNPERMITTED_USER, 401)
             password = result['password']
         
-        if account_type == MASTER_ACCOUN_TYPE:
+        if account_type == MASTER_ACCOUNT_TYPE:
             result = account_dao.check_master(data, connection)
             is_deleted = result['is_deleted']
             if is_deleted:

@@ -2,13 +2,11 @@ import re
 
 from model import ProductDao, UtilDao
 
-from util.exception import ProcessingFailureError, UnauthorizedError
-from util.message import INVALID_REQUEST, UNAUTHORIZED, INVALID_PRODUCT_ID, NOT_EXIST_PRODUCT_ID
-from util.const import MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE
+from util.exception import ProcessingFailureError
+from util.message import INVALID_REQUEST
 
 
 class ProductService:
-
     def get_product_list(self, connection, filters):
         """어드민 상품 관리 리스트
 
@@ -41,23 +39,23 @@ class ProductService:
                 filters["start_date"] = filters["end_date"]
 
         if "start_date" in filters:
-            filters["start_date"] = filters["start_date"] + ' 00:00:00'
+            filters["start_date"] = filters["start_date"] + " 00:00:00"
 
         if "end_date" in filters:
-            filters["end_date"] = filters["end_date"] + ' 23:59:59'
+            filters["end_date"] = filters["end_date"] + " 23:59:59"
 
         if "product_name" in filters:
-            filters["product_name"] = filters["product_name"] + '%'
+            filters["product_name"] = filters["product_name"] + "%"
 
-        reg = re.compile(r'^[a-zA-Z]*$')
+        reg = re.compile(r"^[a-zA-Z]*$")
 
         # filters에 seller_name이 있으면서 영어 대소문자와 숫자로 이루어졌을 때
         if filters.get("seller_name") and reg.match(filters.get("seller_name")):
-            filters["seller_name_en"] = filters["seller_name"] + '%'
+            filters["seller_name_en"] = filters["seller_name"] + "%"
 
         # filters에 seller_name이 있으면서 영어 대소문자와 숫자로 이루어지지 않았을 때
         if filters.get("seller_name") and not reg.match(filters.get("seller_name")):
-            filters["seller_name_kr"] = filters["seller_name"] + '%'
+            filters["seller_name_kr"] = filters["seller_name"] + "%"
 
         # 셀러 속성 리스트는 ,로 잘라서 튜플로 변환
         if "seller_category" in filters:
@@ -112,15 +110,17 @@ class ProductService:
 
         return {"success_count": count, "fail_list": fail_list}
 
-    def get_seller_name_search_list(self, connection, filters):
-
-        filters["search_word"] = filters["search_word"] + '%'
-        filters["limit"] = int(filters.get("limit", 10))
-
-        if filters.get("limit") < 1:
-            filters["limit"] = 1
+    def get_product_category_list(self, connection, filters):
 
         product_dao = ProductDao()
-        sellers = product_dao.get_seller_name_search_list(connection, filters)
+        product_categories = []
+        product_subcategories = []
 
-        return {"sellers": sellers}
+        if filters.get("product_category_id") is None:
+            product_categories = product_dao.get_product_category_list(connection, filters)
+
+        else:
+            product_subcategories = product_dao.get_product_subcategory_list(connection, filters)
+
+        return {"product_categories": product_categories, "product_subcategories": product_subcategories}
+

@@ -4,8 +4,8 @@
 END_DATE = '9999-12-31 23:59:59'
 
 # Seller Action Status
-OPEN_STORE = 1
-STAND_BY = 2
+OPEN_STORE = 1 # 입점
+STAND_BY = 2 # 입점 대기
 
 # 유저 타입
 MASTER_ACCOUNT_TYPE = 1

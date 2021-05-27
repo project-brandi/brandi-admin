@@ -1,6 +1,5 @@
-import string
-import random
 from datetime  import date
+from uuid      import uuid1
 
 from flask import send_file
 
@@ -10,15 +9,10 @@ class ExcelDownloadService:
     # titles = ['a', 'b', 'c']
     # data = [{}, {}, {}]
     def excel_download(self, titles, data):
-        LENGTH = 10
-        string_pool = string.digits
         today = str(date.today())
-        result = ""
-
-        for i in range(LENGTH):
-            result += random.choice(string_pool)
-        
-        file_name = today + "_" + result
+        uuid  = str(uuid1())
+                
+        file_name = today + "_" + uuid
         
         workbook = xlsxwriter.Workbook(f"{file_name}.xlsx")
         worksheet = workbook.add_worksheet()

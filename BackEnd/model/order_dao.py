@@ -16,8 +16,7 @@ class ProductPrepareDao:
                 op.id as order_product_id, 
                 sh.korean_name AS seller_name, 
                 ph.`name` AS product_name,
-                c.color, 
-                sz.size, 
+                CONCAT(c.color, "/", sz.size) AS option_info, 
                 po.extra_price, 
                 oph.quantity, 
                 oh.`name`, 
@@ -79,6 +78,9 @@ class ProductPrepareDao:
 
         if type(filter.get('seller_attribute')) == tuple:
             query += " AND s.seller_subcategory_id IN %(seller_attribute)s"
+
+        if filter.get("account_id"):
+            query += " AND s.id = %(account_id)s"
 
         if request.path == '/order/product-prepare/download':
             if type(filter.get('order_product_id')) == int:
@@ -154,6 +156,9 @@ class ProductPrepareDao:
 
         if filter.get('product_name'):
             query += " AND ph.`name` LIKE %(product_name)s"
+        
+        if filter.get("account_id"):
+            query += " AND s.id = %(account_id)s"
 
         if type(filter.get('seller_attribute')) == int:
             query += " AND s.seller_subcategory_id = %(seller_attribute)s"

@@ -4,7 +4,7 @@ from model import ProductDao, UtilDao
 
 from util.exception import ProcessingFailureError, UnauthorizedError
 from util.message import INVALID_REQUEST, UNAUTHORIZED, INVALID_PRODUCT_ID, NOT_EXIST_PRODUCT_ID
-from util.const import MASTER, SELLER
+from util.const import MASTER_ACCOUN_TYPE, SELLER_ACCOUNT_TYPE
 
 
 class ProductService:

@@ -76,9 +76,6 @@ class ProductPrepareService:
                 '결제금액', 
                 '주문상태']
 
-            # for item in data:
-            #     item["created_at"] = str(item["created_at"])
-
             result = excel_download_service.excel_download(titles, data)
 
             return result

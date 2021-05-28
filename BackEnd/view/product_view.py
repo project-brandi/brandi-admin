@@ -1,6 +1,15 @@
 from flask import jsonify, request, g
 from flask.views import MethodView
-from flask_request_validator import GET, Param, validate_params, Datetime, CompositeRule, Max, Min
+from flask_request_validator import (
+    GET,
+    Param,
+    validate_params,
+    Datetime,
+    CompositeRule,
+    Max,
+    Min,
+    PATH,
+)
 
 from service import ProductService
 
@@ -9,15 +18,15 @@ from util.const import MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE
 from util.message import UNAUTHORIZED, NOT_EXIST_PRODUCT_ID, INVALID_PRODUCT_ID
 from util.exception import UnauthorizedError, InvalidParamError
 
-from connection import connect_db
+from connection import connect_db, connect_s3
+from config import BUCKET_NAME
 
 
 class ProductView(MethodView):
-
     @login_required
     @validate_params(
-        Param("start_date", GET, str, required=False, rules=[Datetime('%Y-%m-%d')]),
-        Param("end_date", GET, str, required=False, rules=[Datetime('%Y-%m-%d')]),
+        Param("start_date", GET, str, required=False, rules=[Datetime("%Y-%m-%d")]),
+        Param("end_date", GET, str, required=False, rules=[Datetime("%Y-%m-%d")]),
         Param("seller_name", GET, str, required=False),
         Param("product_name", GET, str, required=False),
         Param("product_number", GET, int, required=False),
@@ -26,7 +35,7 @@ class ProductView(MethodView):
         Param("is_sale", GET, bool, required=False),
         Param("seller_category", GET, list, required=False),
         Param("offset", GET, int, required=False),
-        Param("limit", GET, int, required=False, rules=CompositeRule(Min(1), Max(100)))
+        Param("limit", GET, int, required=False, rules=CompositeRule(Min(1), Max(100))),
     )
     def get(*args):
         """어드민 상품 관리 리스트
@@ -62,7 +71,10 @@ class ProductView(MethodView):
         filters = dict(request.args)
         filters["account_id"] = g.account_info.get("account_id")
 
-        if g.account_info.get("account_type") not in [MASTER_ACCOUNT_TYPE, SELLER_ACCOUNT_TYPE]:
+        if g.account_info.get("account_type") not in [
+            MASTER_ACCOUNT_TYPE,
+            SELLER_ACCOUNT_TYPE,
+        ]:
             raise UnauthorizedError(UNAUTHORIZED, 401)
 
         product_service = ProductService()
@@ -110,21 +122,21 @@ class ProductView(MethodView):
                 connection.close()
 
 
-class ProductSellerView(MethodView):
-
+class ProductCategoryView(MethodView):
     @validate_params(
-        Param("search_word", GET, str, required=True),
-        Param("limit", GET, int, required=True, rules=CompositeRule(Min(1), Max(100)))
+        Param("product_category_id", PATH, int, required=False),
+        Param("seller_category_id", GET, int, required=False),
     )
-    def get(*args):
+    def get(*args, product_category_id=None):
         filters = dict(request.args)
+        filters["product_category_id"] = product_category_id
 
         product_service = ProductService()
         connection = None
 
         try:
             connection = connect_db()
-            result = product_service.get_seller_name_search_list(connection, filters)
+            result = product_service.get_product_category_list(connection, filters)
             return jsonify({"data": result})
 
         except Exception as e:
@@ -133,3 +145,11 @@ class ProductSellerView(MethodView):
         finally:
             if connection is not None:
                 connection.close()
+
+
+class ProductDetailInfoImageView(MethodView):
+
+    def post(*args):
+        pass
+
+    pass

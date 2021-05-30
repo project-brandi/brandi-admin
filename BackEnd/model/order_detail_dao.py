@@ -17,7 +17,7 @@ class OrderDetailInfoDao:
                 oph.price, 
                 oph.discount_rate, 
                 oph.price - truncate(oph.price * (oph.discount_rate / 100), -1) AS sale_price, 
-                sh.korean_name, 
+                sh.korean_name AS seller_name, 
                 CONCAT(c.color, "/", sz.size) AS option_info,  
                 oph.quantity, 
                 po.extra_price, 

@@ -2,9 +2,8 @@ from flask import request
 
 import pymysql
 
-from util.const import (SHIPMENT_STATUS_BEFORE_DELIVERY, 
-                        ORDER_STATUS_ORDER_COMPLETED,
-                        SHIPPING,
+from util.const import (ORDER_STATUS_PRODUCT_PREPARE, SHIPMENT_STATUS_BEFORE_DELIVERY, 
+                        ORDER_STATUS_SHIPPING, SHIPMENT_STATUS_SHIPPING,
                         END_DATE)
 
 class ProductPrepareDao:
@@ -22,7 +21,8 @@ class ProductPrepareDao:
                 oh.`name` AS order_name, 
                 oh.phone_number AS order_phone, 
                 oh.total_price, 
-                ss.shipment_status
+                oph.order_status_id,
+                os.order_status
             FROM orders AS o
                 INNER JOIN order_products AS op
                     ON o.id = op.order_id   
@@ -46,11 +46,11 @@ class ProductPrepareDao:
                     ON po.size_id = sz.id
                 INNER JOIN colors AS c 
                     ON po.color_id = c.id
-                INNER JOIN shipment_status AS ss 
-                    ON sm.shipment_status_id = ss.id
+                INNER JOIN order_status AS os 
+                    ON oph.order_status_id = os.id
             WHERE 
                 sm.shipment_status_id = {SHIPMENT_STATUS_BEFORE_DELIVERY}
-                AND oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+                AND oph.order_status_id = {ORDER_STATUS_PRODUCT_PREPARE}
                 """
 
         if filter.get("start_date"):
@@ -136,11 +136,11 @@ class ProductPrepareDao:
                     ON po.size_id = sz.id
                 INNER JOIN colors AS c
                     ON po.color_id = c.id
-                INNER JOIN shipment_status AS ss
-                    ON sm.shipment_status_id = ss.id
+                INNER JOIN order_status AS os 
+                    ON oph.order_status_id = os.id
             WHERE
                 sm.shipment_status_id = {SHIPMENT_STATUS_BEFORE_DELIVERY}
-                AND oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+                AND oph.order_status_id = {ORDER_STATUS_PRODUCT_PREPARE}
                 """
 
         if filter.get("start_date"):
@@ -189,7 +189,7 @@ class ProductPrepareDao:
                 ON oph.order_product_id = op.id
             INNER JOIN products AS p 
                 ON op.product_id = p.id
-            WHERE oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+            WHERE oph.order_status_id = {ORDER_STATUS_PRODUCT_PREPARE}
                 AND oph.end_time = %(end_date)s
                 AND oph.order_product_id = %(order_product_id)s
             """
@@ -213,7 +213,7 @@ class ProductPrepareDao:
             SET 
                 oph.end_time = %(now)s
             WHERE 
-                oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+                oph.order_status_id = {ORDER_STATUS_PRODUCT_PREPARE}
                 AND oph.order_product_id = %(order_product_id)s
                 AND oph.end_time = %(end_date)s
             """
@@ -238,7 +238,7 @@ class ProductPrepareDao:
                     quantity
                 )
             SELECT
-                {SHIPPING},
+                {ORDER_STATUS_SHIPPING},
                 oph.order_product_id,
                 %(now)s,
                 %(end_date)s,
@@ -252,7 +252,7 @@ class ProductPrepareDao:
             INNER JOIN products AS p
                 ON op.product_id = p.id
             WHERE
-                oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+                oph.order_status_id = {ORDER_STATUS_PRODUCT_PREPARE}
                 AND oph.order_product_id = %(order_product_id)s
                 AND oph.id = %(order_product_history_id)s
                 """
@@ -275,10 +275,10 @@ class ProductPrepareDao:
             INNER JOIN products AS p
                 ON op.product_id = p.id
             SET 
-                sm.shipment_status_id = {SHIPPING},
+                sm.shipment_status_id = {SHIPMENT_STATUS_SHIPPING},
                 sm.start_time = %(now)s
             WHERE sm.order_product_id = %(order_product_id)s
-                AND oph.order_status_id = {SHIPPING}
+                AND oph.order_status_id = {ORDER_STATUS_SHIPPING}
                 AND oph.start_time = %(now)s
                 AND oph.end_time = %(end_date)s
                 """

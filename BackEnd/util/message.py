@@ -23,3 +23,5 @@ NOT_EXIST_PRODUCT_ID = '상품 번호가 없습니다.'
 
 OFFSET_OUT_OF_RANGE = "offset 0 이상의 값을 입력해주세요."
 LIMIT_OUT_OF_RANGE = "limit 1 이상의 값을 입력해주세요."
+
+PARAM_REQUIRED = "날짜 조건이 없을 경우에는 필수 필터 조건 검색이 존재합니다. (주문번호 or 주문상세번호 or 주문자명 or 핸드폰번호)"

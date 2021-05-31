@@ -39,8 +39,11 @@ class UnauthorizedError(CustomError):
 class InvalidParamError(CustomError):
     pass
 
-class OffsetOutOfRange(CustomError):
+class OffsetOutOfRangeError(CustomError):
     pass
 
-class LimitOutOfRange(CustomError):
+class LimitOutOfRangeError(CustomError):
+    pass
+
+class ParamRequiredError(CustomError):
     pass

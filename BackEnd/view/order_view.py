@@ -3,12 +3,10 @@ from ast      import literal_eval
 
 from flask                             import jsonify, request, g
 from flask.views                       import MethodView
-from flask_request_validator           import Param, GET
-from flask_request_validator.validator import validate_params
 
 from connection     import connect_db
-from service        import ProductPrepareService, OrderDetailInfoService
-from util.exception import InvalidRequest, OffsetOutOfRange, LimitOutOfRange
+from service        import ProductPrepareService
+from util.exception import InvalidRequest, OffsetOutOfRangeError, LimitOutOfRangeError, ParamRequiredError
 from util.message   import *
 from util.decorator import login_required
 from util.const     import SELLER_ACCOUNT_TYPE
@@ -27,26 +25,34 @@ class ProductPrepareView(MethodView):
                 "order_product_id" : request.args.get("order_product_id", ""),
                 "order_name"       : request.args.get("order_name", ""),
                 "order_phone"      : request.args.get("order_phone", ""),
+                "start_date"       : request.args.get("start_date", ""),
+                "end_date"         : request.args.get("end_date", ""),
                 "seller_name"      : request.args.get("seller_name", ""),
                 "product_name"     : request.args.get("product_name", ""),
                 "seller_attribute" : request.args.get("seller_attribute", ""),
-                "start_date"       : request.args.get("start_date", date.today() - timedelta(days=3)),
-                "end_date"         : request.args.get("end_date", date.today() + timedelta(days=1)),
                 "order_by"         : int(request.args.get("order_by", 1)),
                 "offset"           : int(request.args.get("offset", 0)),
                 "limit"            : int(request.args.get("limit", 50)),
             }
 
+            if filter["order_id"] == "" and\
+                filter["order_product_id"] == "" and\
+                filter["order_name"] == "" and \
+                filter["order_phone"] == "" and\
+                filter["start_date"] == "" and\
+                filter["end_date"] == "":
+                raise ParamRequiredError(PARAM_REQUIRED, 400)
+
             if filter["offset"] < 0:
-                raise OffsetOutOfRange(OFFSET_OUT_OF_RANGE, 400)
+                raise OffsetOutOfRangeError(OFFSET_OUT_OF_RANGE, 400)
             
             if filter["limit"] < 1:
-                raise LimitOutOfRange(LIMIT_OUT_OF_RANGE, 400)
+                raise LimitOutOfRangeError(LIMIT_OUT_OF_RANGE, 400)
 
             if filter["seller_attribute"] != "":
                 filter["seller_attribute"] = literal_eval(filter["seller_attribute"])
-
-            if type(filter["end_date"]) == str:
+            
+            if filter["end_date"] != "":
                 filter["end_date"] = datetime.strptime(filter["end_date"], '%Y-%m-%d') + timedelta(days=1)            
             
             if g.account_info["account_type"] == SELLER_ACCOUNT_TYPE:
@@ -71,7 +77,7 @@ class ProductPrepareView(MethodView):
         except Exception as e:
             if connection is not None:
                 connection.rollback()
-                raise e
+            raise e
 
         finally:
             if connection is not None:

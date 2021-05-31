@@ -11,7 +11,7 @@ class ProductPrepareDao:
     def get_product_prepare(self, connection, filter):
         query = f"""
             SELECT 
-                o.created_at, 
+                o.paid_at, 
                 o.id as order_id, 
                 op.id as order_product_id, 
                 sh.korean_name AS seller_name, 
@@ -19,8 +19,8 @@ class ProductPrepareDao:
                 CONCAT(c.color, "/", sz.size) AS option_info, 
                 po.extra_price, 
                 oph.quantity, 
-                oh.`name`, 
-                oh.phone_number, 
+                oh.`name` AS order_name, 
+                oh.phone_number AS order_phone, 
                 oh.total_price, 
                 ss.shipment_status
             FROM orders AS o
@@ -50,9 +50,14 @@ class ProductPrepareDao:
                     ON sm.shipment_status_id = ss.id
             WHERE 
                 sm.shipment_status_id = {SHIPMENT_STATUS_BEFORE_DELIVERY}
-                AND o.created_at >= %(start_date)s
-                AND o.created_at <= %(end_date)s      
+                AND oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
                 """
+
+        if filter.get("start_date"):
+            query += " AND o.paid_at >= %(start_date)s"
+        
+        if filter.get("end_date"):
+            query += " AND o.paid_at <= %(end_date)s"
 
         if filter.get('order_id'): 
             query += " AND o.id LIKE %(order_id)s"
@@ -90,10 +95,10 @@ class ProductPrepareDao:
                 query += " AND op.id in %(order_product_id)s"
 
         if filter.get('order_by') == 1:
-            query += " ORDER BY o.created_at DESC"
+            query += " ORDER BY o.paid_at DESC"
 
         else:
-            query += " ORDER BY o.created_at ASC"
+            query += " ORDER BY o.paid_at ASC"
 
         if filter.get("limit"):
             if filter.get("offset"):
@@ -135,9 +140,14 @@ class ProductPrepareDao:
                     ON sm.shipment_status_id = ss.id
             WHERE
                 sm.shipment_status_id = {SHIPMENT_STATUS_BEFORE_DELIVERY}
-                AND o.created_at >= %(start_date)s
-                AND o.created_at <= %(end_date)s
+                AND oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
                 """
+
+        if filter.get("start_date"):
+            query += " AND o.paid_at >= %(start_date)s"
+        
+        if filter.get("end_date"):
+            query += " AND o.paid_at <= %(end_date)s"
 
         if filter.get('order_number'):
             query += " AND o.id LIKE %(order_id)s"

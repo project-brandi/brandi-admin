@@ -21,7 +21,7 @@ class ProductPrepareDao:
                 oph.quantity, 
                 oh.`name`, 
                 oh.phone_number, 
-                oph.price, 
+                oh.total_price, 
                 ss.shipment_status
             FROM orders AS o
                 INNER JOIN order_products AS op
@@ -171,10 +171,35 @@ class ProductPrepareDao:
 
             return cursor.fetchone()
 
+    def select_log_primary_key(self, connection, order_product):
+        query = f"""
+            SELECT oph.id
+                FROM order_product_histories AS oph
+            INNER JOIN order_products AS op
+                ON oph.order_product_id = op.id
+            INNER JOIN products AS p 
+                ON op.product_id = p.id
+            WHERE oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
+                AND oph.end_time = %(end_date)s
+                AND oph.order_product_id = %(order_product_id)s
+            """
+
+        if order_product.get("account_id"):
+            query += " AND p.seller_id = %(account_id)s"
+        print(order_product)
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(query, order_product)
+
+            return cursor.fetchone()
+
     def patch_order_log_end(self, connection, order_product):
         query = f"""
             UPDATE  
                 order_product_histories AS oph
+            INNER JOIN order_products AS op
+                ON oph.order_product_id = op.id
+            INNER JOIN products AS p
+                ON op.product_id = p.id
             SET 
                 oph.end_time = %(now)s
             WHERE 
@@ -182,9 +207,12 @@ class ProductPrepareDao:
                 AND oph.order_product_id = %(order_product_id)s
                 AND oph.end_time = %(end_date)s
             """
-
+        
+        if order_product.get("account_id"):
+            query += " AND p.seller_id = %(account_id)s"
+        print(query)
         with connection.cursor() as cursor:
-            
+            print(order_product)
             return cursor.execute(query, order_product)
 
     def patch_order_log_start(self, connection, order_product):
@@ -209,11 +237,18 @@ class ProductPrepareDao:
                 oph.quantity
             FROM 
                 order_product_histories AS oph
+            INNER JOIN order_products AS op
+                ON oph.order_product_id = op.id
+            INNER JOIN products AS p
+                ON op.product_id = p.id
             WHERE
                 oph.order_status_id = {ORDER_STATUS_ORDER_COMPLETED}
                 AND oph.order_product_id = %(order_product_id)s
-                AND oph.end_time = %(now)s
+                AND oph.id = %(order_product_history_id)s
                 """
+        
+        if order_product.get("account_id"):
+            query += " AND p.seller_id = %(account_id)s"
 
         with connection.cursor() as cursor:
             
@@ -227,6 +262,8 @@ class ProductPrepareDao:
                 ON sm.order_product_id = op.id
             INNER JOIN order_product_histories AS oph
                 ON op.id = oph.order_product_id
+            INNER JOIN products AS p
+                ON op.product_id = p.id
             SET 
                 sm.shipment_status_id = {SHIPPING},
                 sm.start_time = %(now)s
@@ -235,6 +272,9 @@ class ProductPrepareDao:
                 AND oph.start_time = %(now)s
                 AND oph.end_time = %(end_date)s
                 """
+
+        if order_product.get("account_id"):
+            query += " AND p.seller_id = %(account_id)s"
 
         with connection.cursor() as cursor:
 

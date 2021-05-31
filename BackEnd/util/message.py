@@ -20,3 +20,6 @@ UNAUTHORIZED = '권한이 없습니다.'
 
 INVALID_PRODUCT_ID = '상품 번호를 확인해주세요.'
 NOT_EXIST_PRODUCT_ID = '상품 번호가 없습니다.'
+
+OFFSET_OUT_OF_RANGE = "offset 0 이상의 값을 입력해주세요."
+LIMIT_OUT_OF_RANGE = "limit 1 이상의 값을 입력해주세요."

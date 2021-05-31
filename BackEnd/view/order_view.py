@@ -8,8 +8,8 @@ from flask_request_validator.validator import validate_params
 
 from connection     import connect_db
 from service        import ProductPrepareService, OrderDetailInfoService
-from util.exception import InvalidRequest
-from util.message   import ORDER_PRODUCTS_NEEDED, ORDER_PRODUCT_ID_NEEDED
+from util.exception import InvalidRequest, OffsetOutOfRange, LimitOutOfRange
+from util.message   import *
 from util.decorator import login_required
 from util.const     import SELLER_ACCOUNT_TYPE
 
@@ -22,8 +22,6 @@ class ProductPrepareView(MethodView):
         connection = None
 
         try:
-            connection = connect_db()
-
             filter = {
                 "order_id"         : request.args.get("order_id", ""),
                 "order_product_id" : request.args.get("order_product_id", ""),
@@ -39,6 +37,12 @@ class ProductPrepareView(MethodView):
                 "limit"            : int(request.args.get("limit", 50)),
             }
 
+            if filter["offset"] < 0:
+                raise OffsetOutOfRange(OFFSET_OUT_OF_RANGE, 400)
+            
+            if filter["limit"] < 1:
+                raise LimitOutOfRange(LIMIT_OUT_OF_RANGE, 400)
+
             if filter["seller_attribute"] != "":
                 filter["seller_attribute"] = literal_eval(filter["seller_attribute"])
 
@@ -47,6 +51,8 @@ class ProductPrepareView(MethodView):
             
             if g.account_info["account_type"] == SELLER_ACCOUNT_TYPE:
                 filter["account_id"] = g.account_info["account_id"]
+
+            connection = connect_db()
 
             if request.path == '/order/product-prepare':
                 result =  product_prepare_service.get_product_prepare(connection, filter)
@@ -71,14 +77,13 @@ class ProductPrepareView(MethodView):
             if connection is not None:
                 connection.close() 
 
+    @login_required
     def patch(self):
         product_prepare_service = ProductPrepareService()
         
         connection = None
 
         try:
-            connection = connect_db()
-
             data = request.json
 
             if "order_products" not in data:
@@ -89,10 +94,14 @@ class ProductPrepareView(MethodView):
             for order_product in order_products:
                 if "order_product_id" not in order_product:
                     raise InvalidRequest(ORDER_PRODUCT_ID_NEEDED, 400)
+                if g.account_info["account_type"] == SELLER_ACCOUNT_TYPE:
+                    order_product["account_id"] = g.account_info["account_id"]
+
+            connection = connect_db()
 
             result = product_prepare_service.patch_product_prepare(connection, order_products)
             
-            return jsonify({"failure_list" : result}), 200
+            return jsonify(result), 200
 
         except Exception as e:
                 raise e

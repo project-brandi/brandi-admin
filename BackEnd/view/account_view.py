@@ -1,6 +1,6 @@
-from flask                   import request, jsonify
+from flask                   import jsonify
 from flask.views             import MethodView
-from flask_request_validator import JSON, Param, validate_params
+from flask_request_validator import *
                                     
 from service                 import AccountService
 from connection              import connect_db
@@ -23,19 +23,19 @@ class SellerAccountView(MethodView):
         Param('cs_phone_number', JSON, str, required=True, rules=[phone_number_rule]),
         Param('cs_nickname', JSON, str, required=True, rules=[nickname_rule])
     )
-    def post(*args):
+    def post(self, valid: ValidRequest):
         account_service = AccountService()
 
         connection = None
         try:
-            data = request.json
+            data = valid.get_json()
             data['account_type_id'] = SELLER_ACCOUNT_TYPE
             
             connection = connect_db()
             result     = account_service.create_account(data, connection)
             connection.commit()
             
-            return jsonify({"message" : ACCOUNT_CREATED, "data" : result})
+            return jsonify({"message" : ACCOUNT_CREATED, "data" : result}), 201
         
         except Exception as e:
             connection.rollback()
@@ -50,19 +50,19 @@ class MasterAccountView(MethodView):
         Param('nickname', JSON, str, required=True, rules=[nickname_rule]),
         Param('password', JSON, str, required=True, rules=[password_rule])
     )
-    def post(*args):
+    def post(self, valid: ValidRequest):
         account_service = AccountService()
 
         connection = None
         try:
-            data = request.json
+            data = valid.get_json()
             data['account_type_id'] = MASTER_ACCOUNT_TYPE
 
             connection = connect_db()
             result     = account_service.create_account(data, connection)
             connection.commit()
             
-            return jsonify({"message" : ACCOUNT_CREATED, "data" : result})
+            return jsonify({"message" : ACCOUNT_CREATED, "data" : result}), 201
         
         except Exception as e:
             connection.rollback()
@@ -78,12 +78,12 @@ class LoginView(MethodView):
         Param('nickname', JSON, str, required=True, rules=[nickname_rule]),
         Param('password', JSON, str, required=True, rules=[password_rule])
     )
-    def post(*args):
+    def post(self, valid: ValidRequest):
         account_service = AccountService()
 
         connection = None
         try:
-            data = request.json
+            data = valid.get_json()
 
             connection = connect_db()
             result     = account_service.login(data, connection)

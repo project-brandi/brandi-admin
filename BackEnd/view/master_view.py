@@ -1,6 +1,6 @@
 from flask                             import request, jsonify, g
 from flask.views                       import MethodView
-from flask_request_validator.validator import JSON, Param, validate_params
+from flask_request_validator.validator import *
 
 from service.master_service  import MasterService
 from connection              import connect_db
@@ -62,7 +62,7 @@ class MasterManageSellerView(MethodView):
         Param("seller_id", JSON, int, required=True),
         Param("master_action_id", JSON, int, required=True)
     )
-    def patch(*args):
+    def patch(self, valid: ValidRequest):
         auth = g.account_info
             
         if auth['account_type'] != MASTER_ACCOUNT_TYPE:
@@ -71,7 +71,7 @@ class MasterManageSellerView(MethodView):
         master_service = MasterService()
         connection = None
         try:
-            data = request.json
+            data = valid.get_json()
             data["account_id"] = auth["account_id"]
 
             connection = connect_db()

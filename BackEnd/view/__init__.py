@@ -19,6 +19,6 @@ def create_endpoints(app):
     app.add_url_rule("/manage/sellers/downloads", view_func=MasterManageSellerView.as_view("master_manage_seller_download_view"))
     app.add_url_rule("/search/sellers", view_func=SearchSellerView.as_view("search_seller"))
     app.add_url_rule("/products", view_func=ProductView.as_view("product"))
-    app.add_url_rule("/products/categories", view_func=ProductCategoryView.as_view("product_category"))
-    app.add_url_rule("/products/categories/<int:product_category_id>", view_func=ProductCategoryView.as_view("product_subcategory"))
+    app.add_url_rule("/products/categories/<int:seller_category_id>", view_func=ProductCategoryView.as_view("product_category"))
+    app.add_url_rule("/products/categories/<int:seller_category_id>/<int:product_category_id>", view_func=ProductCategoryView.as_view("product_subcategory"))
     app.add_url_rule("/images", view_func=ImageView.as_view("image"))

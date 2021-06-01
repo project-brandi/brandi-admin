@@ -1,11 +1,11 @@
-from view.image_view import ImageView
-from view.order_view import ProductPrepareView
-from view.product_view import ProductView
-from view.product_category_view import ProductCategoryView
-from view.account_view import SellerAccountView, MasterAccountView, LoginView
-from view.master_view import MasterManageSellerView
-from view.search_view import SearchSellerView
-from view.order_detail_view import OrderDetailInfoView
+from view.image_view             import ImageView
+from view.order_view             import ProductPrepareView
+from view.product_view           import ProductView
+from view.product_category_view  import ProductCategoryView
+from view.account_view           import SellerAccountView, MasterAccountView, LoginView
+from view.master_view            import MasterManageSellerView
+from view.search_view            import SearchSellerView
+from view.order_detail_info_view import OrderDetailInfoView
 
 
 def create_endpoints(app):

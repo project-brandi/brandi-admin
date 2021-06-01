@@ -11,8 +11,8 @@ class ProductPrepareDao:
         query = f"""
             SELECT 
                 o.paid_at, 
-                o.id as order_id, 
-                op.id as order_product_id, 
+                o.id AS order_id, 
+                op.id AS order_product_id, 
                 sh.korean_name AS seller_name, 
                 ph.`name` AS product_name,
                 CONCAT(c.color, "/", sz.size) AS option_info, 
@@ -59,49 +59,48 @@ class ProductPrepareDao:
         if filter.get("end_date"):
             query += " AND o.paid_at <= %(end_date)s"
 
-        if filter.get('order_id'): 
+        if filter.get("order_id"): 
             query += " AND o.id LIKE %(order_id)s"
 
-        if request.path == '/order/product-prepare':
-            if filter.get('order_product_id'):
+        if request.path == "/order/product-prepare":
+            if filter.get("order_product_id"):
                 query += " AND op.id LIKE %(order_product_id)s"
         
-        if filter.get('order_name'):
+        if filter.get("order_name"):
             query += " AND oh.`name` LIKE %(order_name)s"
 
-        if filter.get('order_phone'):
+        if filter.get("order_phone"):
             query += " AND oh.phone_number LIKE %(order_phone)s"
 
-        if filter.get('seller_name'):
+        if filter.get("seller_name"):
             query += " AND sh.korean_name LIKE %(seller_name)s"
 
-        if filter.get('product_name'):
+        if filter.get("product_name"):
             query += " AND ph.`name` LIKE %(product_name)s"
 
-        if type(filter.get('seller_attribute')) == int:
+        if type(filter.get("seller_attribute")) == int:
             query += " AND s.seller_subcategory_id = %(seller_attribute)s"
 
-        if type(filter.get('seller_attribute')) == tuple:
+        if type(filter.get("seller_attribute")) == tuple:
             query += " AND s.seller_subcategory_id IN %(seller_attribute)s"
 
         if filter.get("account_id"):
             query += " AND s.id = %(account_id)s"
 
-        if request.path == '/order/product-prepare/download':
+        if request.path == "/order/product-prepare/download":
             if type(filter.get('order_product_id')) == int:
                 query += " AND op.id = %(order_product_id)s"
 
-            if type(filter.get('order_product_id')) == tuple:
+            if type(filter.get("order_product_id")) == tuple:
                 query += " AND op.id in %(order_product_id)s"
 
-        if filter.get('order_by') == 1:
+        if filter.get("order_by") == 1:
             query += " ORDER BY o.paid_at DESC"
 
         else:
             query += " ORDER BY o.paid_at ASC"
 
         if filter.get("limit"):
-            if filter.get("offset"):
                 query += " LIMIT %(offset)s, %(limit)s"
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -149,31 +148,31 @@ class ProductPrepareDao:
         if filter.get("end_date"):
             query += " AND o.paid_at <= %(end_date)s"
 
-        if filter.get('order_number'):
+        if filter.get("order_number"):
             query += " AND o.id LIKE %(order_id)s"
 
-        if filter.get('order_detail_number'):
+        if filter.get("order_detail_number"):
             query += " AND op.id LIKE %(order_product_id)s"
 
-        if filter.get('order_name'):
+        if filter.get("order_name"):
             query += " AND oh.`name` LIKE %(order_name)s"
 
-        if filter.get('order_phone'):
+        if filter.get("order_phone"):
             query += " AND oh.phone_number LIKE %(order_phone)s"
 
-        if filter.get('seller_name'):
+        if filter.get("seller_name"):
             query += " AND sh.korean_name LIKE %(seller_name)s"
 
-        if filter.get('product_name'):
+        if filter.get("product_name"):
             query += " AND ph.`name` LIKE %(product_name)s"
         
         if filter.get("account_id"):
             query += " AND s.id = %(account_id)s"
 
-        if type(filter.get('seller_attribute')) == int:
+        if type(filter.get("seller_attribute")) == int:
             query += " AND s.seller_subcategory_id = %(seller_attribute)s"
 
-        if type(filter.get('seller_attribute')) == tuple:
+        if type(filter.get("seller_attribute")) == tuple:
             query += " AND s.seller_subcategory_id IN %(seller_attribute)s"
 
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -196,7 +195,7 @@ class ProductPrepareDao:
 
         if order_product.get("account_id"):
             query += " AND p.seller_id = %(account_id)s"
-        print(order_product)
+        
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(query, order_product)
 
@@ -220,9 +219,9 @@ class ProductPrepareDao:
         
         if order_product.get("account_id"):
             query += " AND p.seller_id = %(account_id)s"
-        print(query)
+        
         with connection.cursor() as cursor:
-            print(order_product)
+            
             return cursor.execute(query, order_product)
 
     def patch_order_log_start(self, connection, order_product):

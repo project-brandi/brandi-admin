@@ -25,7 +25,9 @@ class OrderDetailInfoDao:
                 oh.`name` AS order_name, 
                 adh.`name` AS receive_name, 
                 adh.phone_number AS receive_phone, 
-                adh.address, 
+                adh.address,
+                adh.additional_address,
+                adh.zip_code, 
                 smm.content AS shipment_message, 
                 sm.message
             FROM order_products AS op

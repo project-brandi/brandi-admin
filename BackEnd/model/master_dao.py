@@ -92,7 +92,7 @@ class MasterDao:
             query += " AND a.created_at <= %(end_date)s"
         
         if filter.get("limit"):
-            if filter.get("offset"):
+            if "offset" in filter:
                 query += " LIMIT %(offset)s, %(limit)s"
         
         with connection.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -117,6 +117,15 @@ class MasterDao:
                         ON sc.seller_type_id = st.Id
                 INNER JOIN action_status AS `as`
                         ON sh.action_status_id = `as`.Id
+                LEFT JOIN seller_clerks AS sl
+                        ON sl.Id = 
+                        (SELECT
+                             MIN(Id)
+                         FROM 
+                            seller_clerks
+                         WHERE 
+                            seller_id = s.Id
+                            AND is_deleted = false)
             WHERE
                 sh.end_time = "{END_DATE}"
                 AND sh.is_deleted = false

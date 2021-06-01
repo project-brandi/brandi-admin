@@ -46,6 +46,9 @@ class AccountService:
         어드민이 로그인했을때 계정 타입을 확인하고 마스터 또는 셀러이면
         account_id 와 account_type을 토큰화하여 토큰을 발급한다.
 
+        Author:
+            김현영
+
         Args:
             data (dict): 사용자가 입력한 nickname, password 값을 가지는 dictionary
             connection (객체): pymysql 객체
@@ -58,7 +61,9 @@ class AccountService:
             InvalidUserError: 패스워드가 일치하지 않을 때
 
         Returns:
-            string : account_id 와 account_type 정보를 가지는 토큰
+            {
+                "access_token" : "token"
+            }
         """
         account_dao = AccountDao()
         

@@ -1,9 +1,10 @@
+from pymysql import connect
 from model import master_dao
 from model import util_dao
 
 from model.master_dao     import MasterDao
 from model.util_dao       import UtilDao
-from service.util_service import ExcelDownloadService
+from service.util_service import UtilService
 from util.const           import *
 
 class MasterService:
@@ -41,27 +42,18 @@ class MasterService:
         Returns:
             [type]: [description]
         """
-        master_dao = MasterDao()
-
+        master_dao = MasterDao()    
+        util_service = UtilService()
         try:
-            sellers = master_dao.get_seller_list(connection, filter)
-            actions = master_dao.get_master_action_list(connection)
+            sellers     = master_dao.get_seller_list(connection, filter)
+            action_dict = util_service.get_action_dict(connection)
 
-            actions_dict = {}
-            for action in actions:
-                if action["action_status_id"] in actions_dict:
-                    actions_dict[action["action_status_id"]].append({"action_id" : action["master_action_id"],
-                                                                     "action" : action["action"]})  
-                else:
-                    actions_dict[action["action_status_id"]] = [{"action_id" : action["master_action_id"],
-                                                                "action" : action["action"]}]
-            
-            result = []
+            result = []   
             for seller in sellers:
-                seller["actions"] = actions_dict[seller["action_status_id"]]
+                seller["actions"] = action_dict[seller["action_status_id"]]
                 result.append(seller)
 
-            count = master_dao.get_seller_list_count(connection, filter)
+            count = master_dao.get_seller_list_count(connection, filter)["count"]
 
             return result, count
 
@@ -102,7 +94,7 @@ class MasterService:
             1
         """
         get_data_dao = MasterDao()
-        to_xlsx_service = ExcelDownloadService()
+        to_xlsx_service = UtilService()
 
         try:
             data = get_data_dao.get_seller_list(connection, filter)

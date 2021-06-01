@@ -38,4 +38,3 @@ ORDER_STATUS_SHIPPING = 3 # 배송중
 
 # shipments_status, order_status 배송 완료
 DELIVERY_COMPLETED = 3
-

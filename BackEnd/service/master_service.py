@@ -1,22 +1,106 @@
-from flask.json       import jsonify
+from model import master_dao
+from model import util_dao
 
 from model.master_dao     import MasterDao
+from model.util_dao       import UtilDao
 from service.util_service import ExcelDownloadService
+from util.const           import *
 
 class MasterService:
     def get_seller_list(self, connection, filter):
+        """셀러 계정 정보를 조회.
+
+        마스터가 셀러 계정 관리페이지에서 조회할 셀러 계정들의 정보를
+        DB로부터 가져온다.
+
+        Author:
+            김현영
+
+        Args:
+            connection (객체): pymysql 객체
+            filter (dict): {
+                "seller_id"          : 셀러 번호,
+                "seller_nickname"    : 셀러 아이디,
+                "english_name"       : 셀러 상호 영문이름,
+                "korean_name"        : 셀러 상호 한글이름,
+                "seller_type"        : 셀러 구분,
+                "clerk_name"         : 담당자 이름,
+                "clerk_phone_number" : 담당자 연락처,
+                "clerk_email"        : 담당자 이메일,
+                "start_date"         : 조회 시작 일자,
+                "end_date"           : 조회 종료 일자,
+                "action_status_id"   : 셀러 상태 아이디,
+                "action_status"      : 셀러 상태,
+                "offset"             : 보여줄 데이터 시작,
+                "limit"              : 보여줄 데이터 개수
+            } 
+
+        Raises:
+            e: [description]
+
+        Returns:
+            [type]: [description]
+        """
         master_dao = MasterDao()
 
         try:
-            result = master_dao.get_seller_list(connection, filter)
-            count  = master_dao.get_seller_list_count(connection, filter)
+            sellers = master_dao.get_seller_list(connection, filter)
+            actions = master_dao.get_master_action_list(connection)
 
-            return jsonify({"data" : result, "count" : count["count"]}), 200
+            actions_dict = {}
+            for action in actions:
+                if action["action_status_id"] in actions_dict:
+                    actions_dict[action["action_status_id"]].append({"action_id" : action["master_action_id"],
+                                                                     "action" : action["action"]})  
+                else:
+                    actions_dict[action["action_status_id"]] = [{"action_id" : action["master_action_id"],
+                                                                "action" : action["action"]}]
+            
+            result = []
+            for seller in sellers:
+                seller["actions"] = actions_dict[seller["action_status_id"]]
+                result.append(seller)
+
+            count = master_dao.get_seller_list_count(connection, filter)
+
+            return result, count
 
         except Exception as e:
             raise e
 
     def to_xlsx(self, connection, filter):
+        """셀러 계정 정보를 xlsx파일로 다운로드.
+
+        마스터가 셀러계정관리 페이지에서 셀러 계정 정보를 xlsx파일로
+        다운로드한다.
+
+        Author:
+            김현영
+
+        Args:
+            connection (객체): pymysql 객체
+            filter (dict): {
+                "seller_id"          : 셀러 번호,
+                "seller_nickname"    : 셀러 아이디,
+                "english_name"       : 셀러 상호 영문이름,
+                "korean_name"        : 셀러 상호 한글이름,
+                "seller_type"        : 셀러 구분,
+                "clerk_name"         : 담당자 이름,
+                "clerk_phone_number" : 담당자 연락처,
+                "clerk_email"        : 담당자 이메일,
+                "start_date"         : 조회 시작 일자,
+                "end_date"           : 조회 종료 일자,
+                "action_status"      : 셀러 상태,
+                "offset"             : 보여줄 데이터 시작,
+                "limit"              : 보여줄 데이터 개수
+            }   
+
+        Raises:
+            e: [description]
+
+        Returns:
+            1
+        """
         get_data_dao = MasterDao()
         to_xlsx_service = ExcelDownloadService()
 
@@ -25,9 +109,10 @@ class MasterService:
 
             titles = [
                 "번호",
-                "셀러아이디",
+                "셀러아이디",
                 "영문이름",
                 "한글이름",
+                "셀러구분",
                 "담당자이름",
                 "셀러상태",
                 "담당자연락처",
@@ -37,13 +122,64 @@ class MasterService:
                 "등록일시"
             ]
 
-            for item in data:
-                item["created_at"] = str(item["created_at"])
-
             result = to_xlsx_service.excel_download(titles, data)
 
             return result
 
         except Exception as e:
             raise e
-        
+    
+    def change_seller_status(self, connection, data):
+        """셀러의 상태를 변경.
+
+        마스터가 셀러계정관리 페이지에서 셀러의 상태를 변경하여
+        상태이력을 남긴다.
+
+        Author:
+            김현영
+
+        Args:
+            connection (객체): pymysql 객체
+            data (dict): {
+                "account_id"       : 이력을 수정한 계정 번호,
+                "seller_id"        : 셀러 번호,
+                "master_action_id" : 마스터가 실행한 action번호
+            }   
+
+        Raises:
+            e: [description]
+
+        Returns:
+            1
+        """
+        master_dao = MasterDao()
+        util_dao   = UtilDao()
+
+        try:
+            master_action = data['master_action_id']
+
+            data["seller_history_id"] = master_dao.get_seller_history_id(connection, data)['Id']
+
+            now = util_dao.select_now(connection)
+            master_dao.update_seller_history_end_time(connection, data, now)
+            
+            if master_action in [APPROVE, REMOVE_BREAK, REMOVE_CLOSE_DOWN]:
+                data["action_status_id"] = OPEN_STORE
+            
+            if master_action == DENY:
+                data["action_status_id"] = REJECTED
+            
+            if master_action == SET_BREAK:
+                data["action_status_id"] = BREAK
+                        
+            if master_action == SET_CLOSE_STAND_BY:
+                data["action_status_id"] = CLOSE_STAND_BY
+            
+            if master_action == SET_CLOSE_DOWN:
+                data["action_status_id"] = CLOSE_DOWN
+
+            return master_dao.change_action_status_and_insert(connection, data, now)
+
+        except Exception as e:
+            raise e
+    

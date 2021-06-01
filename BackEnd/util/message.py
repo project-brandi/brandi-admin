@@ -8,6 +8,7 @@ ORDER_PRODUCTS_NEEDED = 'order_products를 입력해주세요.'
 # 성공 메시지
 ACCOUNT_CREATED = '계정이 생성되었습니다.'
 LOGIN_SUCCESS = '로그인 되었습니다.'
+STATUS_UPDATE_SUCCESS = "셀러의 상태가 변경되었습니다."
 
 # 에러 메시지 
 ALREADY_EXISTS = '이미 존재하는 아이디입니다.'

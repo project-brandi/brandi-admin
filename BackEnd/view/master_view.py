@@ -1,10 +1,11 @@
-from flask                   import request, g
-from flask.views             import MethodView
+from flask                             import request, jsonify, g
+from flask.views                       import MethodView
+from flask_request_validator.validator import JSON, Param, validate_params
 
 from service.master_service  import MasterService
 from connection              import connect_db
 
-from util.message            import UNAUTHORIZED
+from util.message            import UNAUTHORIZED, STATUS_UPDATE_SUCCESS
 from util.exception          import UnauthorizedError
 from util.const              import MASTER_ACCOUNT_TYPE
 from util.decorator          import login_required
@@ -12,9 +13,9 @@ from util.decorator          import login_required
 class MasterManageSellerView(MethodView):
     @login_required
     def get(self):
-        data = g.account_info
+        auth = g.account_info
             
-        if data['account_type'] != MASTER_ACCOUNT_TYPE:
+        if auth['account_type'] != MASTER_ACCOUNT_TYPE:
             raise UnauthorizedError(UNAUTHORIZED, 401)
         
         master_service = MasterService()
@@ -25,6 +26,7 @@ class MasterManageSellerView(MethodView):
                 "seller_nickname"    : request.args.get("seller_nickname", ""),
                 "english_name"       : request.args.get("english_name", ""),
                 "korean_name"        : request.args.get("korean_name", ""),
+                "seller_type"        : request.args.get("seller_type", ""),
                 "clerk_name"         : request.args.get("clerk_name", ""),
                 "clerk_phone_number" : request.args.get("clerk_phone_number", ""),
                 "clerk_email"        : request.args.get("clerk_email", ""),
@@ -38,21 +40,50 @@ class MasterManageSellerView(MethodView):
             connection = connect_db()
 
             if request.path == "/manage/sellers":
-                result = master_service.get_seller_list(connection, filter)
+                result, count = master_service.get_seller_list(connection, filter)
+                return jsonify({"data" : result, "count" : count}), 200
 
             if request.path == "/manage/sellers/downloads":
                 del filter["offset"]
                 del filter["limit"]   
                 result = master_service.to_xlsx(connection, filter)
+                return result
             
-            connection.commit()
-            
-            return result
-        
         except Exception as e:
             connection.rollback()
             raise e 
             
+        finally:
+            if connection is not None:
+                connection.close()
+    
+    @login_required
+    @validate_params(
+        Param("seller_id", JSON, int, required=True),
+        Param("master_action_id", JSON, int, required=True)
+    )
+    def patch(*args):
+        auth = g.account_info
+            
+        if auth['account_type'] != MASTER_ACCOUNT_TYPE:
+            raise UnauthorizedError(UNAUTHORIZED, 401)
+        
+        master_service = MasterService()
+        connection = None
+        try:
+            data = request.json
+            data["account_id"] = auth["account_id"]
+
+            connection = connect_db()
+            result = master_service.change_seller_status(connection, data)
+            connection.commit()
+
+            return jsonify({"message" : STATUS_UPDATE_SUCCESS, "data" : result}), 201
+
+        except Exception as e:
+            connection.rollback()
+            raise e
+        
         finally:
             if connection is not None:
                 connection.close()

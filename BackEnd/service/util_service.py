@@ -1,10 +1,9 @@
-from io import BytesIO
+from io        import BytesIO
 from datetime  import date
 from uuid      import uuid1
+from flask     import send_file
 
-from flask import send_file
-
-from openpyxl import Workbook
+from openpyxl              import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 class ExcelDownloadService:
@@ -21,7 +20,7 @@ class ExcelDownloadService:
 
         row = 1
         column = 1
-
+        
         for title in titles:
             worksheet.cell(row, column, title)
             column += 1

@@ -1,5 +1,7 @@
+from view.image_view import ImageView
 from view.order_view import ProductPrepareView
-from view.product_view import ProductView, ProductCategoryView, ProductDetailInfoImageView
+from view.product_view import ProductView
+from view.product_category_view import ProductCategoryView
 from view.account_view import SellerAccountView, MasterAccountView, LoginView
 from view.master_view import MasterManageSellerView
 from view.search_view import SearchSellerView
@@ -19,4 +21,4 @@ def create_endpoints(app):
     app.add_url_rule("/products", view_func=ProductView.as_view("product"))
     app.add_url_rule("/products/categories", view_func=ProductCategoryView.as_view("product_category"))
     app.add_url_rule("/products/categories/<int:product_category_id>", view_func=ProductCategoryView.as_view("product_subcategory"))
-    app.add_url_rule("/products/detail-info-images", view_func=ProductDetailInfoImageView.as_view("product_detail_info_image"))
+    app.add_url_rule("/images", view_func=ImageView.as_view("image"))

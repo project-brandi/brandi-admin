@@ -14,6 +14,7 @@ from util.exception       import CustomError
 from util.message         import UNKNOWN_ERROR
 from service.util_service import cache
 
+
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
@@ -46,6 +47,7 @@ def create_app():
         return jsonify({"message": UNKNOWN_ERROR}), 500
 
     return app
+
 
 def register_extensions(app):
     cache.init_app(app)

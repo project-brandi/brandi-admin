@@ -10,11 +10,12 @@ from util.decorator import login_required
 class ProductCategoryView(MethodView):
     @login_required
     @validate_params(
+        Param("seller_category_id", PATH, int, required=False),
         Param("product_category_id", PATH, int, required=False),
-        Param("seller_category_id", GET, int, required=False),
     )
-    def get(*args, product_category_id=None):
+    def get(*args, seller_category_id, product_category_id=None):
         filters = dict(request.args)
+        filters["seller_category_id"] = seller_category_id
         filters["product_category_id"] = product_category_id
 
         product_service = ProductService()

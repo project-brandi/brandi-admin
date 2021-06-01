@@ -3,11 +3,13 @@ from service.order_service        import ProductPrepareService
 from service.order_detail_service import OrderDetailInfoService
 from service.product_service      import ProductService
 from service.util_service         import UtilService
+from service.image_service        import ImageService
 
 __all__ = [
     "AccountService",
     "ProductPrepareService",
     "OrderDetailInfoService",
     "ProductService",
-    "UtilService"
+    "UtilService",
+    "ImageService"
 ]

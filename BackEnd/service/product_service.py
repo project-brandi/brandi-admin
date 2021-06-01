@@ -34,7 +34,7 @@ class ProductService:
         """
 
         # 조회 기간 필터에서 시작 날짜가 끝 날짜보다 뒤일 때 시작과 끝을 같게 해줌
-        if "start_date" and "end_date" in filters:
+        if "start_date" in filters and "end_date" in filters:
             if filters.get("start_date") > filters.get("end_date"):
                 filters["start_date"] = filters["end_date"]
 
@@ -88,13 +88,15 @@ class ProductService:
         for row in data:
 
             try:
+                row["product_history_id"] = product_dao.select_product_history_id(connection, row)
+
                 # 기존 데이터 선분 이력 끝나는 시간 9999 -> 현재로 변경
                 if not product_dao.update_product_history_end_time(connection, row, now):
                     raise ProcessingFailureError(INVALID_REQUEST, 400)
 
+                # 수정한 데이터 생성
                 result = product_dao.insert_product_history(connection, row, now)
 
-                # 수정한 데이터 생성
                 if not result:
                     raise ProcessingFailureError(INVALID_REQUEST, 400)
 
@@ -124,3 +126,27 @@ class ProductService:
 
         return {"product_categories": product_categories, "product_subcategories": product_subcategories}
 
+    def insert_new_product(self, connection, data, options):
+
+        product_dao = ProductDao()
+
+        data["product_id"] = product_dao.insert_new_product(connection, data)
+        product_dao.insert_new_product_history(connection, data)
+
+        for option in options:
+            option["product_id"] = data["product_id"]
+            product_dao.insert_new_product_options(connection, option)
+
+        return data
+
+    def insert_new_product_images(self, connection, data, image_urls):
+
+        product_dao = ProductDao()
+        data["is_main"] = True
+
+        for image_url in image_urls:
+            data["image_url"] = image_url
+            result = product_dao.insert_new_product_image(connection, data)
+            data["is_main"] = False
+
+        return result

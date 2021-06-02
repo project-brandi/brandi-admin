@@ -1,5 +1,5 @@
 from view.image_view             import ImageView
-from view.order_view             import ProductPrepareView
+from view.product_prepare_view   import ProductPrepareView
 from view.product_view           import ProductView
 from view.product_category_view  import ProductCategoryView
 from view.account_view           import SellerAccountView, MasterAccountView, LoginView

@@ -40,7 +40,33 @@ class MasterService:
             e: [description]
 
         Returns:
-            [type]: [description]
+            dict : {
+                    "count": 총 셀러 계정수,
+                    "data": [
+                        {
+                        "Id": 셀러번호,
+                        "action_status_id"   : 셀러 상태 아이디,
+                        "actions": [
+                            {
+                            "action"         : 마스터 액션,
+                            "action_id"      : 마스터 액션 아이디
+                            }
+                        ],
+                        "clerk_email"        : 담당자 이메일,
+                        "clerk_name"         : 담당자 이름,
+                        "clerk_phone_number" : 담당자 연락처,
+                        "created_at"         : 셀러 계정 생성날짜,
+                        "english_name"       : 셀러상호 영문명,
+                        "korean_name"        : 셀러상호 한글명,
+                        "product_count"      : 보유 상품 개수,
+                        "seller_attribute"   : 셀러 카테고리명,
+                        "seller_id"          : 셀러 아이디,
+                        "seller_type"        : 셀러 구분,
+                        "status"             : 셀러 상태
+                        }
+                            ]
+                    }
+
         """
         master_dao = MasterDao()    
         util_service = UtilService()
@@ -142,7 +168,7 @@ class MasterService:
             e: [description]
 
         Returns:
-            1
+            int : 갱신된 row 개수
         """
         master_dao = MasterDao()
         util_dao   = UtilDao()

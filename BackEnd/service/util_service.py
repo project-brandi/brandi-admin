@@ -58,9 +58,22 @@ class UtilService:
     
     @cache.cached(timeout=5*60)
     def get_action_dict(self, connection):
+        """셀러 상태에 따른 마스터 액션 목록 생성
+
+        Author:
+            김현영
+
+        Args:
+            connection (객체): pymysql 객체 
+
+        Returns:
+            dict: {
+                셀러 상태 아이디 : [{"action_id": 마스터 액션 번호, "action": 마스터 액션}]
+                }
+        """
         master_dao = MasterDao()
         actions    = master_dao.get_master_action_list(connection)
-
+        
         actions_dict = {}
         for action in actions:
             if action["action_status_id"] not in actions_dict:

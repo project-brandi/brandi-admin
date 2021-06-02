@@ -13,6 +13,20 @@ from util.decorator          import login_required
 class MasterManageSellerView(MethodView):
     @login_required
     def get(self):
+        """셀러 계정 관리
+
+        셀러 계정 목록 조회, 셀러 계정 정보 엑셀 다운로드
+
+        Authon:
+            김현영
+
+        Raises:
+            UnauthorizedError: 마스터가 아닌 계정의 요청일 때
+            e: [description]
+
+        Returns:
+            [type]: [description]
+        """
         auth = g.account_info
             
         if auth['account_type'] != MASTER_ACCOUNT_TYPE:
@@ -63,6 +77,20 @@ class MasterManageSellerView(MethodView):
         Param("master_action_id", JSON, int, required=True)
     )
     def patch(self, valid: ValidRequest):
+        """셀러 계정 관리
+
+        셀러 상태 변경
+
+        Authon:
+            김현영
+
+        Raises:
+            UnauthorizedError: 마스터가 아닌 계정의 요청일 때
+            e: [description]
+
+        Returns:
+            
+        """
         auth = g.account_info
             
         if auth['account_type'] != MASTER_ACCOUNT_TYPE:

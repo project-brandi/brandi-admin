@@ -71,10 +71,9 @@ class OrderDetailInfoView(MethodView):
 
         connection = None
         try:
-            connection = connect_db()
-            
             data = valid.get_params()
-            print(data)
+
+            connection = connect_db()
             
             result = order_detail_info.get_order_detail_info(connection, data)
             

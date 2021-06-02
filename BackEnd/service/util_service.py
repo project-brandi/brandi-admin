@@ -12,18 +12,17 @@ from model.master_dao import MasterDao
 cache = Cache(config={"CACHE_TYPE" : "simple"})
 
 class UtilService:
-    # titles = ['a', 'b', 'c']
-    # data = [{}, {}, {}]
-
     def excel_download(self, titles, data):
-        """[summary]
+        """엑셀 파일을 만들고 전송하는 service
+        Author:
+            서득영
 
         Args:
-            titles ([type]): [description]
-            data ([type]): [description]
+            titles : 첫 행에 들어갈 컬럼 제목 리스트 ['a', 'b', 'c']
+            data : 각 셀에 입력될 데이터 [{}, {}, {}]
 
         Returns:
-            [type]: [description]
+            생성된 엑셀 파일 전송
         """
         workbook  = Workbook()
         worksheet = workbook.active

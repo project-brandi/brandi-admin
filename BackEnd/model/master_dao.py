@@ -4,6 +4,52 @@ from util.const import END_DATE
 
 class MasterDao:
     def get_seller_list(self, connection, filter):
+        """셀러 계정 목록을 조회
+
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+            filter (dict): {
+                "seller_id"          : 셀러 번호,
+                "seller_nickname"    : 셀러 아이디,
+                "english_name"       : 셀러 상호 영문이름,
+                "korean_name"        : 셀러 상호 한글이름,
+                "seller_type"        : 셀러 구분,
+                "clerk_name"         : 담당자 이름,
+                "clerk_phone_number" : 담당자 연락처,
+                "clerk_email"        : 담당자 이메일,
+                "start_date"         : 조회 시작 일자,
+                "end_date"           : 조회 종료 일자,
+                "action_status_id"   : 셀러 상태 아이디,
+                "action_status"      : 셀러 상태,
+                "offset"             : 보여줄 데이터 시작,
+                "limit"              : 보여줄 데이터 개수
+            }
+        
+        Raises:
+            e: [description]
+        
+        Returns:
+            list :  [
+                        {
+                            "Id"                 : 셀러번호,
+                            "action_status_id"   : 셀러 상태 아이디,
+                            "clerk_email"        : 담당자 이메일,
+                            "clerk_name"         : 담당자 이름,
+                            "clerk_phone_number" : 담당자 연락처,
+                            "created_at"         : 셀러 계정 생성날짜,
+                            "english_name"       : 셀러상호 영문명,
+                            "korean_name"        : 셀러상호 한글명,
+                            "product_count"      : 보유 상품 개수,
+                            "seller_attribute"   : 셀러 카테고리명,
+                            "seller_id"          : 셀러 아이디,
+                            "seller_type"        : 셀러 구분,
+                            "status"             : 셀러 상태
+                        }
+                    ]
+        """
         query = f"""
             SELECT
                 a.Id,
@@ -101,6 +147,36 @@ class MasterDao:
         
       
     def get_seller_list_count(self, connection, filter):
+        """셀러 계정 목록의 총 계정수 조회.
+        
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+            filter (dict): {
+                "seller_id"          : 셀러 번호,
+                "seller_nickname"    : 셀러 아이디,
+                "english_name"       : 셀러 상호 영문이름,
+                "korean_name"        : 셀러 상호 한글이름,
+                "seller_type"        : 셀러 구분,
+                "clerk_name"         : 담당자 이름,
+                "clerk_phone_number" : 담당자 연락처,
+                "clerk_email"        : 담당자 이메일,
+                "start_date"         : 조회 시작 일자,
+                "end_date"           : 조회 종료 일자,
+                "action_status_id"   : 셀러 상태 아이디,
+                "action_status"      : 셀러 상태,
+                "offset"             : 보여줄 데이터 시작,
+                "limit"              : 보여줄 데이터 개수
+            }
+        
+        Raises:
+            e: [description]
+        
+        Returns:
+            dict : {"count" : 총 셀러 계정수 }       
+        """
         query = f"""
             SELECT
                 COUNT(*) AS count
@@ -172,6 +248,26 @@ class MasterDao:
             return cursor.fetchone()
 
     def get_master_action_list(self, connection):
+        """셀러 상태 변경 액션 목록 조회
+        
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+        
+        Raises:
+        
+        Returns:
+            list : [ 
+                        {
+                            "action_status_id" : 셀러 상태 번호, 
+                            "master_action_id" : 마스터 액션 번호,
+                            "status" : 셀러 상태, 
+                            "action" : 마스터 액션
+                         }
+                    ]    
+        """
         query = """
             SELECT
                 `as`.Id AS action_status_id,
@@ -190,6 +286,24 @@ class MasterDao:
             return cursor.fetchall()
     
     def get_seller_history_id(self, connection, data):
+        """셀러의 최신 이력 데이터의 PK값 조회.
+        
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+            data (dict): {
+                "account_id"       : 이력을 수정한 계정 번호,
+                "seller_id"        : 셀러 번호,
+                "master_action_id" : 마스터가 실행한 action번호
+            }
+        
+        Raises:
+        
+        Returns:
+            dict : { "Id" : 해당 셀러의 마지막 이력 데이터의 PK값 }    
+        """
         query = f"""
             SELECT
                 Id
@@ -206,6 +320,25 @@ class MasterDao:
             return cursor.fetchone()
 
     def update_seller_history_end_time(self, connection, data, now):
+        """셀러 이력의 end_time을 갱신.
+        
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+            data (dict): {
+                "account_id"       : 이력을 수정한 계정 번호,
+                "seller_id"        : 셀러 번호,
+                "master_action_id" : 마스터가 실행한 action번호
+            }
+            now (datetime): 이력 변경을 실행한 시간 
+        
+        Raises:
+        
+        Returns:
+            int : 쿼리를 실행하여 갱신된 row 개수   
+        """
         query = f"""
             UPDATE 
                 seller_histories
@@ -221,6 +354,25 @@ class MasterDao:
             return cursor.execute(query, data)
 
     def change_action_status_and_insert(self, connection, data, now):
+        """셀러 상태를 갱신하여 새로운 이력 데이터 생성.
+        
+        Author:
+            김현영
+        
+        Args:
+            connection (객체): pymysql 객체
+            data (dict): {
+                "account_id"       : 이력을 수정한 계정 번호,
+                "seller_id"        : 셀러 번호,
+                "action_status_id" : 셀러 상태 번호
+            }
+            now (datetime): 이력 변경을 실행한 시간 
+        
+        Raises:
+        
+        Returns:
+            int : 쿼리를 실행하여 갱신된 row 개수   
+        """
         query = f"""
             INSERT INTO seller_histories(
                 account_id,

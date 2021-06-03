@@ -26,29 +26,30 @@ export default {
       backupDetailData: {},
       detailData: {
         basic_info: {
-          seller_id: '',
-          is_selling: 0,
-          is_displayed: 0
+          seller_id: ''
         },
+        manufacturer: '', // 제조사
+        manufactured_date: '', // 제조일
+        origin_id: 0, // 원산지 아이디
+        is_sold: 0, // 판매여부
+        is_displayed: 0, // 진열여부
         selling_info: {},
         // option_info: [],
         images: ['', '', '', '', ''],
-        firstCategoryId: null, // 1차 카테고리
-        productCategoryId: null, // 2차 카테고리
+        category_id: null, // 1차 카테고리
+        product_subcategory_id: null, // 2차 카테고리
         seller_property_id: 1,
-        isSelling: 0, // 판먀여부
-        isDisplay: 0, // 진열 여부
-        productName: '', // 상품명
+        name: '', // 상품명
         brand_name_korean: '',
         gosiType: 1,
-        productDetailImage: '', // 상품 상세 정보
+        detail_page_html: '', // 상품 상세 정보
         price: 0, // 판매가
-        minimum: 1, // 최소 수량
-        maximum: 20, // 최대 수량
-        discountRate: 0, // 할인율
+        minimum_sell_quantity: 1, // 최소 수량
+        maximum_sell_quantity: 20, // 최대 수량
+        discount_rate: 0, // 할인율
         discountPrice: 0, // 할인가
-        discountStart: '', // 할인시작일
-        discountEnd: '', // 할인종료일
+        discount_start_time: '', // 할인시작일
+        discount_end_time: '', // 할인종료일
         option_info: [] // 옵션 상품
       }
     }
@@ -83,7 +84,7 @@ export default {
     },
     // 셀러 상세
     getSellerUrl() {
-      return this.prefixUrl + '/products/sellers'
+      return this.prefixUrl + '/search/sellers'
     },
     // 상품 컬러 리스트
     getColorUrl() {
@@ -107,11 +108,11 @@ export default {
     },
     // 셀러 1차 카테고리
     sellerInfoUrl() {
-      return this.prefixUrl + '/products/seller'
+      return this.prefixUrl + '/products/categories'
     },
     // 셀러 2차 카테고리
     sellerSubCategoryUrl() {
-      return this.prefixUrl + '/products/subcategory'
+      return this.prefixUrl + '/products/categories'
     },
     offset() {
       return (this.page - 1) * this.pageLen
@@ -143,12 +144,12 @@ export default {
           params: params
         })
           .then((res) => {
-            if (res.data && res.data.result.total_count !== undefined) {
-              res.data.result.product.forEach((d) => {
+            if (res.data && res.data.data.count !== undefined) {
+              res.data.data.products.forEach((d) => {
                 d.checked = false
               })
-              const productList = res.data.result.product
-              const totalCount = res.data.result.total_count
+              const productList = res.data.data.products
+              const totalCount = res.data.data.count
               this.total = totalCount
               this.list = productList
               resolve()
@@ -190,14 +191,14 @@ export default {
           }
         })
     },
-    async getSellerDetail(sellerId) {
-      const res = await this.get(this.sellerInfoUrl + '/' + sellerId)
-      this.productCategory = res.data.result
+    async getSellerDetail(sellerTypeNo) {
+      const res = await this.get(this.sellerInfoUrl + '/' + sellerTypeNo)
+      this.productCategory = res.data.data.product_categories
       // /products/sellers/<int:seller_id>
     },
     async getSellerSubCategory(categoryId) {
-      const res = await this.get(this.sellerSubCategoryUrl + '/' + categoryId)
-      this.productSubCategory = res.data.result
+      const res = await this.get(this.sellerSubCategoryUrl + '/' + this.detailData.category_id + '/' + categoryId)
+      this.productSubCategory = res.data.data.product_subcategories
     },
     putProduct(productId) {
       const images = this.detailData.images
@@ -252,6 +253,28 @@ export default {
         })
     },
     addProduct() {
+      /*
+      --form 'seller_id="2"' \
+    --form 'is_sold="true"' \
+    --form 'is_displayed="true"' \
+    --form 'product_subcategory_id="2"' \
+    --form 'manufacturer="서진물산"' \
+    --form 'manufactured_date="2021-05-21"' \
+    --form 'origin_id="1"' \
+    --form 'name="testname"' \
+    --form 'comment="하늘하늘"' \
+    --form 'main_image_file=@"/Users/cold/Downloads/20200122230101_wxuhplzv.jpeg"' \
+    --form 'image_files=@"/Users/cold/Downloads/g4830g64697295p8t2n9.jpeg"' \
+    --form 'image_files=@"/Users/cold/Downloads/i16288330962.jpeg"' \
+    --form 'detail_page_html="<html></html>"' \
+    --form 'options="{\"color_id\":\"1\", \"size_id\":\"2\"},{\"color_id\":\"2\", \"size_id\":\"1\"}"' \
+    --form 'price="10000"' \
+    --form 'discount_rate="10"' \
+    --form 'discount_start_time="2021-05-26 15:10"' \
+    --form 'discount_end_time="2021-05-27 15:10"' \
+    --form 'minimum_sell_quantity="1"' \
+    --form 'maximum_sell_quantity="20"'
+      */
       const payload = JSON.parse(JSON.stringify(this.detailData))
       payload.basic_info.date_of_manufacture = moment(payload.basic_info.date_of_manufacture).format('YYYY-MM-DD')
       const images = this.detailData.images
@@ -263,6 +286,11 @@ export default {
           formData.append('file', file)
         }
       })
+      console.log(formData)
+      // eslint-disable-next-line no-constant-condition
+      if (true) {
+        return
+      }
 
       // payload.productThumbnailImages = payload.productThumbnailImages.filter(d => d)
       this.post(this.postUrl, formData)
@@ -314,19 +342,32 @@ export default {
       // 상품 일괄 수정
       const payload = []
       productList.forEach(product => {
-        const updataData = { product_id: product.id }
+        const updataData = { product_id: product.product_number }
         if (updateValue.selling !== '') {
-          updataData.selling = parseInt(updateValue.selling)
+          updataData.is_sold = updateValue.selling === '1'
         }
         if (updateValue.display !== '') {
-          updataData.display = parseInt(updateValue.display)
+          updataData.is_displayed = updateValue.display === '1'
         }
         payload.push(updataData)
       })
       try {
         // const response =
-        await this.patch(this.batchUrl, payload)
-        Message.success('상품이 일괄 수정 되었습니다.')
+        const res = await this.patch(this.batchUrl, payload)
+        // 일괄 처리 실패 있음
+        const failCount = res.data.data.fail_list.length
+        if (failCount > 0) {
+          // 전체 실패
+          if (failCount === productList.length) {
+            // 일부 실패
+            Message.error('상품이 일괄 수정이 모두 실패하였습니다.')
+          } else {
+            // 일부 실패
+            Message.warn(`상품이 일괄 수정 되었고 ${failCount}건의 주문의 갱신이 실패하였습니다.`)
+          }
+        } else {
+          Message.success('상품이 일괄 수정 되었습니다.')
+        }
         updateValue.selling = ''
         updateValue.display = ''
         this.load()

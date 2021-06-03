@@ -5,24 +5,24 @@
         {{ dataStore.detailData.user_id }}
       </a-descriptions-item>
       <a-descriptions-item label="주문자명">
-        {{ dataStore.detailData.orderer_name }}
+        {{ dataStore.detailData.order_name }}
       </a-descriptions-item>
 
       <a-descriptions-item label="수령자명">
-        {{ dataStore.detailData.recipient }}
+        {{ dataStore.detailData.receive_name }}
       </a-descriptions-item>
       <a-descriptions-item label="연락처">
-        {{ dataStore.detailData.recipient_phone }}
+        {{ dataStore.detailData.receive_phone }}
          <a-button type="danger" size="small">변경</a-button>
       </a-descriptions-item>
 
       <a-descriptions-item label="배송지">
         {{ dataStore.detailData.address }}
-        <!-- {{ dataStore.detailData.recipientAddressDetail }}
-        ({{ dataStore.detailData.recipientPostalCode }}) -->
+        {{ dataStore.detailData.additional_address }}
+        ({{ dataStore.detailData.zip_code }})
       </a-descriptions-item>
       <a-descriptions-item label="배송시 요청사항">
-        {{ dataStore.detailData.delivery_memo }}
+        {{ dataStore.detailData.shipment_message }}
         <!-- 일반배송 : 직접 받겠습니다 -->
         <a-button type="info">배송지 변경</a-button>
       </a-descriptions-item>

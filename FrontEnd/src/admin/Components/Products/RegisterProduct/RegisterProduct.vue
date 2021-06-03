@@ -70,7 +70,7 @@ export default {
         // 상세 정보를 불러 온 후 카테고리 정보 가져오기
         // this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
         this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
-        this.dataStore.getSellerSubCategory(this.dataStore.detailData.basic_info.category_id)
+        this.dataStore.getSellerSubCategory(this.dataStore.detailData.category_id)
       })
     } else {
       this.dataStore.isNew = true

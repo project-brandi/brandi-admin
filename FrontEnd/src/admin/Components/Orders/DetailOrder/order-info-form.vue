@@ -5,7 +5,7 @@
         네이버페이(신용카드)
       </a-descriptions-item>
       <a-descriptions-item label="주문 번호">
-        {{ dataStore.detailData.order_number }}
+        {{ dataStore.detailData.order_id }}
       </a-descriptions-item>
       <a-descriptions-item label="주문 일시">
         {{ dataStore.detailData.order_created_at }}

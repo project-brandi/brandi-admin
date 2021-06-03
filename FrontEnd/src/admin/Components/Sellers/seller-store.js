@@ -40,7 +40,7 @@ export default {
     },
     // 셀러 리스트 / 수정
     listUrl() {
-      return this.prefixUrl + '/sellers'
+      return this.prefixUrl + '/manage/sellers'
     },
     // 셀러 리스트 / 수정
     getUrl() {
@@ -48,7 +48,7 @@ export default {
     },
     // 셀러 상태 변경
     patchUrl() {
-      return this.prefixUrl + '/sellers'
+      return this.prefixUrl + '/manage/sellers'
     },
     // 셀러 리스트 / 수정
     putUrl() {
@@ -59,7 +59,7 @@ export default {
     },
     // 셀러 리스트 / 수정
     statusUrl() {
-      return this.prefixUrl + '/sellers'
+      return this.prefixUrl + '/manage/sellers'
     },
     offset() {
       return (this.page - 1) * this.pageLen
@@ -82,7 +82,7 @@ export default {
       this.loading = true
       const params = JSON.parse(JSON.stringify(this.filter))
       params.limit = this.pageLen
-      params.page = this.page
+      params.offset = (this.page - 1) * this.pageLen
 
       // this.get(this.constants.apiDomain + '/seller/edit')
       this.get(this.listUrl, {
@@ -90,8 +90,8 @@ export default {
       })
         .then((res) => {
           if (res.data) {
-            const sellerList = res.data.result.seller_list
-            const totalCount = res.data.result.total_count
+            const sellerList = res.data.data
+            const totalCount = res.data.count
             sellerList.forEach((d) => {
               d.checked = false
             })
@@ -114,9 +114,9 @@ export default {
       this.loading = true
       const payload = {
         seller_id: sellerId,
-        to_status_type_id: toStatusTypeId
+        master_action_id: toStatusTypeId
       }
-      this.patch(this.statusUrl + '/' + sellerId + ':status', payload)
+      this.patch(this.statusUrl, payload)
         .then((res) => {
           Message.success('셀러 상태 변경 성공')
           this.load()
@@ -162,10 +162,11 @@ export default {
     },
     putDetail(sellerId, sellerData) {
       // managers
+      debugger
       const payload = JSON.parse(JSON.stringify(this.detailData))
       delete payload.managers
       this.loading = true
-      this.patch(this.patchUrl + '/' + sellerId, payload)
+      this.patch(this.patchUrl, payload)
         .then((res) => {
           Message.success('셀러 수정 성공')
           this.backupDetailData = JSON.parse(JSON.stringify(this.detailData))

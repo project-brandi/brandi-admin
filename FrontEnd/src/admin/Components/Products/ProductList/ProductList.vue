@@ -48,36 +48,36 @@
       </template>
       <template slot="row" slot-scope="{item}">
         <!--
-discount_price: 12000
-discount_rate: 0.2
-id: 4
-image_url: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
+created_at: "2021-05-21 17:25:07"
+discount_end_time: "2021-05-31 23:59:59"
+discount_rate: 1
+discount_start_time: "2021-04-01 23:59:59"
+image_url: "https://lh3.googleusercontent.com/proxy/97YVwL6Qf9URPcBLHqgBGPE5PI9EqyMW3Hyb0uNUZGoQdfyFnpXkW00WyHngW8U0kBy6R0qFi92dwN9W_aDUIU5kGvDfD2OlZDOkF0yt0roKce4fiA"
 is_displayed: 1
-is_selling: 1
-korean_brand_name: "라라"
-price: 15000
-product_code: "444"
-seller_id: 4
-sub_property: "디자이너브랜드"
-title: "믓진 아우터 "
-upload_date: "2021-04-20 "
+is_sold: 1
+name: "롱슬리브"
+price: 30000
+product_code: "1"
+product_number: 1
+seller_category: "쇼핑몰"
+
           -->
-        <td>{{ item.upload_date }}</td> <!-- 등록일 -->
+        <td>{{ item.created_at }}</td> <!-- 등록일 -->
         <td><img :src="item.image_url" width="70" height="70"></td> <!-- 대표이미지 -->
-        <td>{{ item.title }}</td> <!-- 상품명 -->
+        <td>{{ item.name }}</td> <!-- 상품명 -->
         <td><router-link :to="'products/'+item.product_code">{{ item.product_code }}</router-link></td> <!-- 상품코드 -->
-        <td>{{ item.id }}</td> <!-- 상품번호 -->
-        <td>{{ item.sub_property }}</td> <!-- 셀러속성 -->
-        <td>{{ item.korean_brand_name }}</td> <!-- 셀러명 -->
+        <td>{{ item.product_number }}</td> <!-- 상품번호 -->
+        <td>{{ item.seller_category }}</td> <!-- 셀러속성 -->
+        <td>{{ item.seller_name }}</td> <!-- 셀러명 -->
         <td>{{ item.price | makeComma }}</td> <!-- 판매가 -->
-        <td>{{ item.discount_price | makeComma }} <span class="discount-rate" v-if="item.discount_rate > 0">({{ item.discount_rate * 100 }}%)</span></td> <!-- 할인가 -->
-        <td>{{ item.is_selling | typeToName('saleTypes') }}</td> <!-- 판매여부 -->
+        <td>{{ item.sale_price || item.price | makeComma }} <span class="discount-rate" v-if="item.discount_rate > 0">({{ item.discount_rate }}%)</span></td> <!-- 할인가 -->
+        <td>{{ item.is_sold | typeToName('saleTypes') }}</td> <!-- 판매여부 -->
         <td>{{ item.is_displayed | typeToName('exhibitTypes') }}</td> <!-- 진열여부 -->
         <td><!--{{ getProductDiscountTypeName(item.is_discount) }}-->
           {{ item.discount_rate > 0 ? 1: 0 | typeToName('discountTypes') }}
         </td> <!-- 할인여부 -->
         <td>
-          <a-button type="primary" size="small" @click="buyProduct(item)">구매하기</a-button>
+          <!-- <a-button type="primary" size="small" @click="buyProduct(item)">구매하기</a-button> -->
         </td>
       </template>
     </board-list>

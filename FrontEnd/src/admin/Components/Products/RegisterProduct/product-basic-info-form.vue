@@ -12,13 +12,13 @@
         <a-button type="success" size="small" @click="showHistoryModal">수정이력보기</a-button>
       </a-descriptions-item>
       <a-descriptions-item label="판매여부" :span="3">
-        <a-radio-group v-model="dataStore.detailData.basic_info.is_selling">
+        <a-radio-group v-model="dataStore.detailData.is_sold">
           <a-radio :value="1">판매</a-radio>
           <a-radio :value="0">미판매</a-radio>
         </a-radio-group>
       </a-descriptions-item>
       <a-descriptions-item label="진열여부" :span="3">
-        <a-radio-group v-model="dataStore.detailData.basic_info.is_displayed">
+        <a-radio-group v-model="dataStore.detailData.is_displayed">
           <a-radio :value="1">진열</a-radio>
           <a-radio :value="0">미진열</a-radio>
         </a-radio-group>
@@ -36,12 +36,12 @@
           <tbody>
           <tr>
             <td>
-              <a-select style="width: 100%" v-model="dataStore.detailData.basic_info.category_id" @change="changeCategory">
+              <a-select style="width: 100%" v-model="dataStore.detailData.category_id" @change="changeCategory">
                 <a-select-option :value="item.value" v-for="item in firstCategory" :key="item.value">{{ item.text }}</a-select-option>
               </a-select>
             </td>
             <td>
-              <a-select style="width: 100%" v-model="dataStore.detailData.basic_info.sub_category_id">
+              <a-select style="width: 100%" v-model="dataStore.detailData.product_subcategory_id">
                 <a-select-option :value="item.value" v-for="item in secondCategory" :key="item.value">{{ item.text }}</a-select-option>
               </a-select>
             </td>
@@ -103,7 +103,7 @@
       </a-descriptions-item>
       <a-descriptions-item :span="3">
         <template slot="label">상세 상품 정보 <span class="required">*</span></template>
-        <a-textarea v-model="dataStore.detailData.basic_info.content  ">곧 만들예정</a-textarea>
+        <a-textarea v-model="dataStore.detailData.detail_page_html  ">곧 만들예정</a-textarea>
       </a-descriptions-item>
     </a-descriptions>
     <product-history-modal ref="historyModal"/>
@@ -148,11 +148,11 @@ export default {
   computed: {
     firstCategory() {
       return this.dataStore.productCategory
-        .map(d => { return { value: d.category_id, text: d.category_name, property_id: d.property_id } })
+        .map(d => { return { value: d.id, text: d.name } })
     },
     secondCategory() {
       return this.dataStore.productSubCategory
-        .map(d => { return { value: d.subcategory_id, text: d.subcategory_name } })
+        .map(d => { return { value: d.id, text: d.name } })
     }
   },
   methods: {
@@ -169,13 +169,15 @@ export default {
       return JSON.parse(JSON.stringify(this.data))
     },
     // 셀러 선택 후 카테고리 가져오기
-    changeSellerId() {
-      this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
+    changeSellerId(item) {
+      console.log('changeSellerId', item)
+      this.dataStore.getSellerDetail(item.seller_subcategory_id)
+      // this.dataStore.getSellerDetail(this.dataStore.detailData.basic_info.seller_id)
     },
     // 1차 카테고리 선택 후 2차 카테고리 가져오기
     changeCategory() {
-      const chooseItem = this.firstCategory.filter(d => d.value === this.dataStore.detailData.basic_info.category_id)
-      this.dataStore.getSellerSubCategory(this.dataStore.detailData.basic_info.category_id)
+      const chooseItem = this.firstCategory.filter(d => d.value === this.dataStore.detailData.category_id)
+      this.dataStore.getSellerSubCategory(this.dataStore.detailData.category_id)
       // 셀러 속성도 보내줘야함
       this.dataStore.detailData.basic_info.property_id = chooseItem[0].property_id
     }

@@ -112,34 +112,34 @@ export default {
     // 주문코드
     this.filterTypes.push({
       typeNo: 1,
-      keywordName: 'order_number',
+      keywordName: 'order_id',
       keywordValue: '',
       mask: this.constants.orderCodeMask
     })
     // 주문상세코드
     this.filterTypes.push({
       typeNo: 2,
-      keywordName: 'order_detail_number',
+      keywordName: 'order_product_id',
       keywordValue: '',
       mask: this.constants.orderCodeMask
     })
     // 주문자명
     this.filterTypes.push({
       typeNo: 3,
-      keywordName: 'user_name',
+      keywordName: 'order_name',
       keywordValue: ''
     })
     // 핸드폰번호
     this.filterTypes.push({
       typeNo: 4,
-      keywordName: 'phone_number',
+      keywordName: 'order_phone',
       keywordValue: '',
-      mask: '###-####-####'
+      mask: '###########'
     })
     // 셀러명
     this.filterTypes.push({
       typeNo: 5,
-      keywordName: 'brand_name_korean',
+      keywordName: 'seller_name',
       keywordValue: ''
     })
     // 상품명
@@ -165,7 +165,7 @@ export default {
     },
     getFilter() {
       const filter = JSON.parse(JSON.stringify(this.filter))
-      if (this.filter.rangeDate && this.filter.rangeDate.length === 2) {
+      if (this.status.needMoreFilter && this.filter.rangeDate && this.filter.rangeDate.length === 2) {
         filter.start_date = this.filter.rangeDate[0].format('YYYY-MM-DD')
         filter.end_date = this.filter.rangeDate[1].format('YYYY-MM-DD')
       }

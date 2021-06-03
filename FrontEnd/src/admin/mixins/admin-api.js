@@ -37,6 +37,33 @@ export default {
       config.headers.Authorization = token
       config.timeout = 10000
       return config
+    },
+    download(url, config, filename) {
+      config = this.cloneAndAuthHeader(config)
+      config.responseType = 'arraybuffer'
+      axios.get(url, config).then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        // const fileName = getFileName(response.headers['content-disposition'])
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', filename) // or any other extension
+        document.body.appendChild(link)
+        link.click()
+      })
     }
   }
 }
+
+// function getFileName(contentDisposition) {
+//   const fileName = contentDisposition
+//     .split(';')
+//     .filter((ele) => {
+//       return ele.indexOf('fileName') > -1
+//     })
+//     .map((ele) => {
+//       return ele
+//         .replace(/"/g, '')
+//         .split('=')[1]
+//     })
+//   return fileName[0] ? fileName[0] : null
+// }

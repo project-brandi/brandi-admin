@@ -12,7 +12,6 @@
     <div class="table-header-buttons">
       <a-button size="small" type="success">전체셀러 엑셀다운로드</a-button>
     </div>
-
     <board-list :data-store="dataStore" :height="500" @change-page="changePage">
       <template slot="header">
         <th>번호</th>
@@ -31,42 +30,46 @@
       </template>
       <template slot="row" slot-scope="{item}">
 <!--
-"english_brand_name": "aaaa",
-"id": 1,
-"korean_brand_name": "가가",
-"manager_email": "aaa@ana.com",
-"manager_name": "gg",
-"manager_phone": "01012314123",
-"seller_created_date": "2021-04-20 09:00:00",
-"seller_identification": "aaaaa",
-"seller_status_type": "입점",
-"seller_status_type_button": [
-  {
-    "button_name": "휴점신청",
-    "to_status_type_id": 4
-  },
-  {
-    "button_name": "퇴점신청 처리",
-    "to_status_type_id": 5
-  }
-],
-"sub_property": "쇼핑몰 "
--->
-        <td>{{ item.seller_id }}</td> <!-- 번호 -->
-        <td>{{ item.korean_brand_name }}</td> <!-- 셀러아이디 -->
-        <td>{{ item.english_brand_name }}</td> <!-- 영문이름 -->
-        <td><router-link :to="'sellers/'+item.seller_id">{{ item.korean_brand_name }}</router-link></td> <!-- 한글이름 -->
-        <td>{{ item.manager_name | emptyDash }}</td> <!-- 담당자이름 -->
-        <td>{{ item.seller_status_type }}</td> <!-- 셀러상태 --> <!-- getSellerStatusName(item.seller_status_id) -->
-        <td>{{ item.manager_phone }} </td> <!-- 담당자연락처 -->
-        <td>{{ item.manager_email | emptyDash }}</td> <!-- 담당자이메일 -->
-        <td>{{ item.sub_property}}</td> <!-- 셀러속성 --> <!-- getSellerPropertyName(item.seller_property_id)  -->
+      "Id": 9,
+      "action_status_id": 2,
+      "actions": [
+        {
+          "action": "입점거절",
+          "action_id": 1
+        },
+        {
+          "action": "입점승인",
+          "action_id": 2
+        }
+      ],
+      "clerk_email": null,
+      "clerk_name": null,
+      "clerk_phone_number": null,
+      "created_at": "2021-05-21 18:06:49",
+      "english_name": "goodshop",
+      "korean_name": "굿샵",
+      "product_count": 0,
+      "seller_attribute": "쇼핑몰",
+      "seller_id": "weweseller99",
+      "seller_type": "일반셀러",
+      "status": "입점대기"
+
+  -->
+        <td>{{ item.Id }}</td> <!-- 번호 -->
+        <td>{{ item.seller_id }}</td> <!-- 셀러아이디 -->
+        <td>{{ item.english_name }}</td> <!-- 영문이름 -->
+        <td>{{ item.korean_name }}</td> <!-- 한글이름 -->
+        <td>{{ item.clerk_name | emptyDash }}</td> <!-- 담당자이름 -->
+        <td>{{ item.status }}</td> <!-- 셀러상태 --> <!-- getSellerStatusName(item.seller_status_id) -->
+        <td>{{ item.clerk_phone_number }} </td> <!-- 담당자연락처 -->
+        <td>{{ item.clerk_email | emptyDash }}</td> <!-- 담당자이메일 -->
+        <td>{{ item.seller_type}}</td> <!-- 셀러속성 --> <!-- getSellerPropertyName(item.seller_property_id)  -->
 <!--        <td>{{ 0 }}</td> &lt;!&ndash; 상품개수 &ndash;&gt;-->
 <!--        <td>{{ item.shopUrl }}</td> &lt;!&ndash; URL &ndash;&gt;-->
-        <td>{{ item.seller_created_date }}</td> <!-- 등록일시 -->
+        <td>{{ item.created_at }}</td> <!-- 등록일시 -->
         <td>
-          <template v-for="action in item.seller_status_type_button"> <!-- constants.sellerStatusActions[item.seller_status_id] -->
-            <a-button :key="action" :type="action.type" size="small" @click="changeSellerStatus(item, action)">{{ action.button_name }}</a-button>
+          <template v-for="action in item.actions"> <!-- constants.sellerStatusActions[item.seller_status_id] -->
+            <a-button :key="action" :type="action.type" size="small" @click="changeSellerStatus(item, action)">{{ action.action }}</a-button>
           </template>
           <a-button type="normal" size="small" @click="moveToShop(item)">Web</a-button>
         </td>
@@ -105,9 +108,9 @@ export default {
     },
     changeSellerStatus(row, action) {
       confirm({
-        content: `"${row.korean_brand_name}" 셀러 상태를 ${action.button_name}로 변경 하시겠습니까?`,
+        content: `"${row.korean_name}" 셀러 상태를 ${action.action}로 변경 하시겠습니까?`,
         onOk: () => {
-          this.dataStore.changeStatus(row.seller_id, action.to_status_type_id)
+          this.dataStore.changeStatus(row.Id, action.action_id)
         }
       })
     },

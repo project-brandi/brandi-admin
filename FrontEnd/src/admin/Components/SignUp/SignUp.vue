@@ -20,6 +20,7 @@
               @keyup="regCheck(regs.idReg, infoInput.account)"
               :class="[infoInput.account.state ? '' : 'errorInput']"
             />
+            <span class="error" v-if="!infoInput.account.state">{{infoInput.account.error}}</span>
           </div>
         </div>
         <div
@@ -54,9 +55,10 @@
               type="password"
               v-model="infoInput.password.value"
               placeholder="비밀번호"
-              @keyup="regCheck(regs.idReg, infoInput.password)"
+              @keyup="regCheck(regs.pwReg, infoInput.password)"
               :class="[infoInput.password.state ? '' : 'errorInput']"
             />
+            <span class="error" v-if="!infoInput.password.state">{{infoInput.password.error}}</span>
           </div>
         </div>
         <div class="input-container">
@@ -86,6 +88,7 @@
               @keyup="regCheck(regs.phReg, infoInput.phone_number)"
               :class="[infoInput.phone_number.state ? '' : 'errorInput']"
             />
+            <span class="error" v-if="!infoInput.phone_number.state">{{infoInput.phone_number.error}}</span>
           </div>
         </div>
         <div class="input-container">
@@ -118,6 +121,7 @@
               @keyup="regCheck(regs.nameReg, infoInput.brand_name_korean)"
               :class="[infoInput.brand_name_korean.state ? '' : 'errorInput']"
             />
+            <span v-if="!infoInput.brand_name_korean.state">{{infoInput.brand_name_korean.error}}</span>
           </div>
         </div>
         <div class="input-container">
@@ -130,6 +134,7 @@
               @keyup="regCheck(regs.engNameReg, infoInput.brand_name_english)"
               :class="[infoInput.brand_name_english.state ? '' : 'errorInput']"
             />
+            <span class="error" v-if="!infoInput.brand_name_english.state">{{infoInput.brand_name_english.error}}</span>
           </div>
         </div>
         <div class="input-container">
@@ -142,6 +147,7 @@
               @keyup="regCheck(regs.telReg, infoInput.brand_crm_number)"
               :class="[infoInput.brand_crm_number.state ? '' : 'errorInput']"
             />
+            <span class="error" v-if="!infoInput.brand_crm_number.state">{{infoInput.brand_crm_number.error}}</span>
           </div>
         </div>
         <!--
@@ -201,14 +207,14 @@ export default {
       regs: { idReg, pwReg, phReg, nameReg, engNameReg, telReg, urlReg },
       test: '',
       infoInput: {
-        account: { value: '', state: true }, // seller_loginID
-        password: { value: '', state: true }, // password
-        password2: { value: '', state: true }, // password2
-        phone_number: { value: '', state: true }, // phone_number
-        brand_name_korean: { value: '', state: true }, // korean_name
-        brand_name_english: { value: '', state: true }, // eng_name
-        brand_crm_number: { value: '', state: true }, // center_number
-        sub_property_id: { value: '1', state: true }
+        account: { value: '', state: true, serverKey: 'nickname', error: '' }, // seller_loginID
+        password: { value: '', state: true, serverKey: 'password', error: '' }, // password
+        password2: { value: '', state: true, error: '' }, // password2
+        phone_number: { value: '', state: true, serverKey: 'seller_phone_number', error: '' }, // phone_number
+        brand_name_korean: { value: '', state: true, serverKey: 'korean_name', error: '' }, // korean_name
+        brand_name_english: { value: '', state: true, serverKey: 'english_name', error: '' }, // eng_name
+        brand_crm_number: { value: '', state: true, serverKey: 'cs_phone_number', error: '' }, // center_number
+        sub_property_id: { value: '1', state: true, serverKey: 'seller_subcategory_id', error: '' }
       },
       radioList: [
         '쇼핑몰',
@@ -258,16 +264,14 @@ export default {
       console.log(filterResult.length)
       if (filterResult.length === 0) {
         this.isLoading = true
-        this.sendSubmit({
-          nickname: this.infoInput.account.value,
-          password: this.infoInput.password.value,
-          seller_phone_number: this.infoInput.phone_number.value,
-          korean_name: this.infoInput.brand_name_korean.value,
-          english_name: this.infoInput.brand_name_english.value,
-          cs_phone_number: this.infoInput.brand_crm_number.value,
-          cs_nickname: 'test', // TODO 값을 받아야한다.
-          account_type_id: this.infoInput.sub_property_id.value
-        })
+        const payload = {}
+        for (const key in this.infoInput) {
+          if (this.infoInput[key].serverKey) {
+            payload[this.infoInput[key].serverKey] = this.infoInput[key].value
+          }
+        }
+        payload.cs_nickname = 'test' // TODO 값을 받아야한다.
+        this.sendSubmit(payload)
       }
     },
     sendSubmit(value) {
@@ -275,22 +279,39 @@ export default {
       let res
       axios
         // .post(this.constants.apiDomain + "/signup", value)
-        .post(this.constants.apiDomain + '/join/seller', value)
+        .post(this.constants.apiDomain + '/join/sellers', value)
         .then((response) => {
           console.log('백엔드 응답', response)
           res = response
           console.log(res)
-          if (res.data.result.status_code) {
-            Message.success('회원가입을 축하합니다!')
-            this.isLoading = false
-            this.$router.push('/')
-          }
+          Message.success('회원가입을 축하합니다!')
+          this.isLoading = false
+          this.$router.push('/admin/login')
         })
         .catch((error) => {
-          console.log('err', error)
+          if (error.response.status === 400) {
+            // 파라메터 에러
+            console.log(error.response.data)
+            if (error.response.data.errors) {
+              for (const key in error.response.data.errors) {
+                const msg = error.response.data.errors[key]
+                for (const k in this.infoInput) {
+                  if (this.infoInput[k].serverKey === key) {
+                    this.infoInput[k].state = false
+                    this.infoInput[k].error = msg
+                    break
+                  }
+                }
+                console.log(key, msg)
+              }
+            }
+          } else {
+            Message.error(String(error.response.data.message))
+          }
+          // console.log('err', error)
           this.isLoading = false
-          Message.error(String(res.data.user_error_message))
-          this.$router.push('/admin/signup')
+          // Message.error(String(res.data.user_error_message))
+          // this.$router.push('/admin/signup')
         })
     }
   }

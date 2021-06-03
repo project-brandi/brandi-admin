@@ -9,8 +9,8 @@
       </thead>
       <tbody>
       <tr v-for="item in dataStore.detailHistory" :key="item">
-        <td>{{ item.update_time }}</td>
-        <td>{{ item.order_status_type }}</td>
+        <td>{{ item.start_time }}</td>
+        <td>{{ item.order_status }}</td>
       </tr>
       </tbody>
 

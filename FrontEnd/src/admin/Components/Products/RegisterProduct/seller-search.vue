@@ -33,8 +33,8 @@ export default {
       console.log('handleSearch', value)
       const res = await this.searchSeller(value)
       console.log(res.data.result)
-      this.data = res.data.result.map(d => {
-        return { value: d.seller_id, text: d.korean_brand_name }
+      this.data = res.data.data.sellers.map(d => {
+        return { value: d.Id, text: d.korean_name, seller_subcategory_id: d.seller_subcategory_id }
       })
       // fetch(value, data => (this.data = data))
     },
@@ -42,13 +42,14 @@ export default {
       console.log('handleChange', value)
       this.value = value
       // const res = await this.searchSeller(value)
-      // this.data = res.result
+      const findItem = this.data.find(item => { return item.value === value })
+      // console.log(findItem)
       // fetch(value, data => (this.data = data))
-      this.$emit('input', value)
+      this.$emit('input', findItem)
     },
     searchSeller(name) {
       return this.get(this.searchUrl, {
-        params: { search: name }
+        params: { search_word: name, limit: 10 }
       })
     }
   },
@@ -57,7 +58,7 @@ export default {
       return this.constants.apiDomain
     },
     searchUrl() {
-      return this.prefixUrl + '/products/seller'
+      return this.prefixUrl + '/search/sellers'
     }
   }
 

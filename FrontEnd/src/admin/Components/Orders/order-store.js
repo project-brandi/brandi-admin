@@ -2,6 +2,7 @@ import AdminApiMixin from '@/admin/mixins/admin-api'
 import CommonMixin from '@/admin/mixins/common-mixin'
 import store from '@/store/index'
 import Message from '@/admin/utils/message'
+import moment from 'moment'
 // import mockup from '@/admin/mockup/orderList.json'
 
 export default {
@@ -35,11 +36,15 @@ export default {
     },
     // 주문 리스트
     listUrl() {
-      return this.prefixUrl + '/orders'
+      return this.prefixUrl + '/order/product-prepare'
+    },
+    // 주문 리스트
+    downloadUrl() {
+      return this.prefixUrl + '/order/product-prepare/download'
     },
     // 주문 상세 / 수정
     detailUrl() {
-      return this.prefixUrl + '/orders'
+      return this.prefixUrl + '/order/order-detail-info'
     },
     // 셀러 리스트 / 수정
     metaUrl() {
@@ -47,7 +52,7 @@ export default {
     },
     // 배송처리
     deliveryUrl() {
-      return this.prefixUrl + '/orders'
+      return this.prefixUrl + '/order/product-prepare'
     },
     offset() {
       return (this.page - 1) * this.pageLen
@@ -65,42 +70,52 @@ export default {
       params.limit = this.pageLen
       params.offset = this.offset
       params.order_status_type_id = 1 // 상품 준비 상태
-      // {{domain}}/orders?order_status_type_id=1&start_date=2021-04-30&end_date=2021-04-01&sub_property_id=1
 
-      // new Promise((resolve, reject) => {
-      //   setTimeout(() => {
-      //     this.$emit('test', { a: 1 })
-      //     resolve(listMockup())
-      //   }, 300)
-      // })
       this.get(this.listUrl, {
         params: params
       })
         .then((res) => {
-          const orderList = res.data.result.order_list
+          const orderList = res.data.data
           orderList.forEach((d) => {
             d.checked = false
           })
-          this.total = res.data.result.total_count
+          this.total = res.data.count
           this.list = orderList
         }).catch((e) => {
           if (e.code === 'ECONNABORTED') {
             Message.error('요청 시간을 초과 하였습니다. 다시 시도해주시기 바랍니다.')
           } else {
-            console.log(e)
-            Message.error('처리 중 오류 발생')
+            // console.log(e.response.data.message)
+            Message.error(e.response.data.message)
           }
         }).then((res) => {
           this.loading = false
         })
     },
+    downloadAll() {
+      // this.loading = true
+      const params = JSON.parse(JSON.stringify(this.filter))
+      params.order_status_type_id = 1 // 상품 준비 상태
+      this.download(this.downloadUrl, {
+        params: params
+      }, `상품준비 전체리스트 ${moment().format('YYMMDDHHmmss')}.xlsx`)
+    },
+    downloadSelect(productIds) {
+      // this.loading = true
+      const params = JSON.parse(JSON.stringify(this.filter))
+      params.order_status_type_id = 1 // 상품 준비 상태
+      params.order_product_id = productIds.join(',')
+      this.download(this.downloadUrl, {
+        params: params
+      }, `상품준비 선택리스트 ${moment().format('YYMMDDHHmmss')}.xlsx`)
+    },
     getDetail(orderNo) {
       this.loading = true
-      this.get(this.detailUrl + '/' + orderNo)
+      this.get(this.detailUrl + '?order_product_id=' + orderNo)
         .then((res) => {
           if (res.data) {
-            this.detailData = res.data.result.order_detail
-            this.detailHistory = res.data.result.order_history
+            this.detailData = res.data.order_detail
+            this.detailHistory = res.data.order_log
           } else {
             Message.error('통신 실패')
           }
@@ -140,14 +155,29 @@ export default {
         })
     },
     async setDelivery(list) {
+      /*
+      {
+          "order_products" : [
+          {
+              "order_product_id" : 1
+          },
+          {
+              "order_product_id" : 2
+          },
+          {
+              "order_product_id" : 3
+          }
+          ]
+      }
+      */
       if (list.length > 0) {
         try {
-          const payload = []
+          const payload = { order_products: [] }
           list.forEach(order => {
-            payload.push({ orders_detail_id: order.orders_detail_id, order_status_type_id: 3 })
+            payload.order_products.push({ order_product_id: order.order_product_id })
           })
           const res = await this.patch(this.deliveryUrl, payload)
-          const failCount = res.data.post_fail.length
+          const failCount = res.data.failure.length
           const successCount = list.length - failCount
 
           if (failCount === 0) {

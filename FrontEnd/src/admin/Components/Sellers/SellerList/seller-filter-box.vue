@@ -9,7 +9,7 @@
       </a-row>
       <a-row :gutter="8" class="filter-row">
         <a-col :span="2" class="filter-label">셀러한글명</a-col>
-        <a-col :span="7"><a-input-search placeholder="검색어를 입력해주세요." v-model="filter.brand_name_korean"/></a-col>
+        <a-col :span="7"><a-input-search placeholder="검색어를 입력해주세요." v-model="filter.korean_name"/></a-col>
         <a-col :span="8">
           <a-input-group compact>
             <a-select v-model="filter.keywordType">
@@ -54,35 +54,22 @@ export default {
   },
   components: { MultiSelectButtons },
   data() {
-    /*
-      number  : 번호(id)
-      account  : 계정
-      brand_name_korean  :  브랜드한글명
-      brand_name_english  :  브랜드영어명
-      manager_name  :  담당자이름
-      manager_number  :  담당자번호
-      manager_email   :   담당자이메일
-      status_id   :  입점상태id (입점, 휴점, …)
-      property_id  :  셀러속성id  ( 로드샵, 마켓 …)
-      start_date  :  시작일자
-      end_date   :   마지막일자
-       */
     return {
       filter: {
         property_id: [],
         status_id: [],
-        brand_name_korean: '',
+        korean_name: '',
         keywordType: '',
         keywordValue: '',
         rangeDate: null
       },
       items: [
-        { label: '셀러번호', value: 'number' },
-        { label: '셀러아이디', value: 'account' },
-        { label: '셀러영문명', value: 'brand_name_english' },
-        { label: '담당자이름', value: 'brand_name_korean' },
-        { label: '담당자연락처', value: 'phone_number' },
-        { label: '담당자이메일', value: 'email' }
+        { label: '셀러번호', value: 'seller_id' },
+        { label: '셀러아이디', value: 'seller_nickname' },
+        { label: '셀러영문명', value: 'english_name' },
+        { label: '담당자이름', value: 'clerk_name' },
+        { label: '담당자연락처', value: 'clerk_phone_number' },
+        { label: '담당자이메일', value: 'clerk_email' }
       ]
     }
   },
